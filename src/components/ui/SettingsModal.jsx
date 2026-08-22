@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { X, Sliders, DollarSign, Bell, Shield, Moon, Check } from 'lucide-react';
+import { X, Sliders, Check } from 'lucide-react';
 import { Button } from './Button';
 
 export const SettingsModal = ({ isOpen, onClose }) => {
-  const [currency, setCurrency] = useState('JPY');
+  const [currency, setCurrency] = useState('INR');
   const [autosaveInterval, setAutosaveInterval] = useState('800ms');
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [budgetAlerts, setBudgetAlerts] = useState(true);
@@ -38,7 +38,7 @@ export const SettingsModal = ({ isOpen, onClose }) => {
             </label>
             <div className="grid grid-cols-3 gap-2">
               {[
-                { code: 'JPY', symbol: '¥ JPY (Yen)' },
+                { code: 'INR', symbol: '₹ INR (Rupees)' },
                 { code: 'USD', symbol: '$ USD (Dollar)' },
                 { code: 'EUR', symbol: '€ EUR (Euro)' }
               ].map((c) => (
