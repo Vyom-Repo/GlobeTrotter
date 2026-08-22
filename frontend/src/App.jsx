@@ -4,6 +4,7 @@ import AuthContainer from './components/AuthContainer';
 import Dashboard from './pages/Dashboard';
 import TripDetails from './pages/TripDetails';
 import ItineraryBuilder from './pages/ItineraryBuilder';
+import TripBudget from './pages/TripBudget';
 import authService from './services/authService';
 
 function ProtectedRoute({ children }) {
@@ -49,6 +50,14 @@ function App() {
           element={
             <ProtectedRoute>
               <ItineraryBuilder />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/trips/:tripId/budget"
+          element={
+            <ProtectedRoute>
+              <TripBudget />
             </ProtectedRoute>
           }
         />

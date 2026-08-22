@@ -171,9 +171,18 @@ export default function ItineraryBuilder() {
           </button>
 
           {trip && (
-            <div className="text-right">
-              <h1 className="text-xl font-bold text-slate-900">{trip.name}</h1>
-              <p className="text-xs text-slate-500">{trip.start_date} → {trip.end_date}</p>
+            <div className="flex items-center space-x-4">
+              <button
+                onClick={() => navigate(`/trips/${tripId}/budget`)}
+                className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-3.5 py-2 rounded-xl transition shadow flex items-center space-x-1"
+              >
+                <span>Budget & Expenses</span>
+              </button>
+
+              <div className="text-right">
+                <h1 className="text-xl font-bold text-slate-900">{trip.name}</h1>
+                <p className="text-xs text-slate-500">{trip.start_date} → {trip.end_date}</p>
+              </div>
             </div>
           )}
         </div>

@@ -7,6 +7,7 @@ from backend.core.dependencies import get_db, get_current_user, get_current_user
 from backend.models.user import User
 from backend.schemas.common import PaginatedResponse, PaginationMeta, SuccessResponse
 from backend.schemas.trip import TripCreate, TripUpdate, TripResponse, TripDetailResponse
+from backend.schemas.expense import BudgetSummary
 from backend.services.trip_service import TripService
 
 router = APIRouter(prefix="/trips", tags=["Trips"])
@@ -67,3 +68,14 @@ def delete_trip(
     """Delete a trip by ID (owner only)."""
     TripService.delete_trip(db, trip_id, current_user)
     return {"success": True, "message": "Trip deleted successfully"}
+
+@router.get("/{trip_id}/budget", response_model=SuccessResponse[BudgetSummary])
+def get_trip_budget(
+    trip_id: UUID,
+    current_user: User = Depends(get_current_user_optional),
+    db: Session = Depends(get_db)
+):
+    """Get complete budget summary and category breakdown for a trip."""
+    from backend.services.budget_service import BudgetService
+    summary = BudgetService.get_trip_budget_summary(db, trip_id, current_user)
+    return SuccessResponse(data=summary)

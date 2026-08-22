@@ -375,16 +375,24 @@ export default function TripDetails() {
             {!isNew && (
               <div className="flex items-center justify-between bg-blue-50 border border-blue-200 p-4 rounded-3xl text-blue-900">
                 <div>
-                  <h3 className="font-bold text-sm">Build Daily Itinerary</h3>
-                  <p className="text-xs text-blue-700 mt-0.5">Schedule day-wise tourist activities for your destination stops.</p>
+                  <h3 className="font-bold text-sm">Trip Builder & Budget</h3>
+                  <p className="text-xs text-blue-700 mt-0.5">Schedule daily activities or manage your trip expenses and budget.</p>
                 </div>
-                <button
-                  onClick={() => navigate(`/trips/${tripId}/itinerary`)}
-                  className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-4 py-2 rounded-xl transition shadow flex items-center space-x-1.5"
-                >
-                  <span>Open Itinerary Builder</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </button>
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={() => navigate(`/trips/${tripId}/budget`)}
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-4 py-2 rounded-xl transition shadow flex items-center space-x-1"
+                  >
+                    <span>Budget & Expenses</span>
+                  </button>
+                  <button
+                    onClick={() => navigate(`/trips/${tripId}/itinerary`)}
+                    className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-4 py-2 rounded-xl transition shadow flex items-center space-x-1.5"
+                  >
+                    <span>Itinerary Builder</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
               </div>
             )}
 

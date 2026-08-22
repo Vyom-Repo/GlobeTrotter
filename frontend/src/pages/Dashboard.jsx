@@ -180,13 +180,22 @@ export default function Dashboard() {
                 </div>
 
                 <div className="px-6 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
-                  <button
-                    onClick={() => navigate(`/trips/${trip.id}`)}
-                    className="text-xs font-semibold text-slate-700 hover:text-blue-600 transition flex items-center space-x-1"
-                  >
-                    <Edit3 className="w-3.5 h-3.5" />
-                    <span>Edit Destinations</span>
-                  </button>
+                  <div className="flex items-center space-x-3">
+                    <button
+                      onClick={() => navigate(`/trips/${trip.id}`)}
+                      className="text-xs font-semibold text-slate-700 hover:text-blue-600 transition flex items-center space-x-1"
+                    >
+                      <Edit3 className="w-3.5 h-3.5" />
+                      <span>Destinations</span>
+                    </button>
+                    <button
+                      onClick={() => navigate(`/trips/${trip.id}/budget`)}
+                      className="text-xs font-semibold text-emerald-700 hover:text-emerald-800 transition flex items-center space-x-1"
+                    >
+                      <DollarSign className="w-3.5 h-3.5" />
+                      <span>Budget</span>
+                    </button>
+                  </div>
 
                   <button
                     onClick={() => navigate(`/trips/${trip.id}/itinerary`)}
