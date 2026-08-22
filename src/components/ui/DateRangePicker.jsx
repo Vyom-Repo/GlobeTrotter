@@ -13,12 +13,11 @@ export const DateRangePicker = ({
   const [isOpen, setIsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('start'); // 'start' | 'end'
   const [viewMonth, setViewMonth] = useState(() => {
-    return startDate ? new Date(startDate) : new Date(2026, 8, 1); // Default Sept 2026
+    return startDate ? new Date(startDate) : new Date(2026, 8, 1);
   });
 
   const popoverRef = useRef(null);
 
-  // Close calendar on outside click
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (popoverRef.current && !popoverRef.current.contains(e.target)) {
@@ -38,13 +37,11 @@ export const DateRangePicker = ({
     return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   };
 
-  // Calendar matrix generator
   const year = viewMonth.getFullYear();
   const month = viewMonth.getMonth();
 
   const firstDayOfMonth = new Date(year, month, 1).getDay();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
-
   const prevMonthDays = new Date(year, month, 0).getDate();
 
   const handlePrevMonth = (e) => {
@@ -63,13 +60,12 @@ export const DateRangePicker = ({
     if (activeTab === 'start') {
       let newEnd = endDate;
       if (endDate && new Date(selectedDateStr) > new Date(endDate)) {
-        newEnd = selectedDateStr; // auto adjust
+        newEnd = selectedDateStr;
       }
       onChange({ startDate: selectedDateStr, endDate: newEnd });
-      setActiveTab('end'); // move to end date selection
+      setActiveTab('end');
     } else {
       if (startDate && new Date(selectedDateStr) < new Date(startDate)) {
-        // If end date picked is before start date, set as start date
         onChange({ startDate: selectedDateStr, endDate: '' });
         setActiveTab('end');
       } else {
@@ -79,7 +75,6 @@ export const DateRangePicker = ({
     }
   };
 
-  // Quick preset helper
   const handleQuickPreset = (days) => {
     const start = startDate ? new Date(startDate) : new Date();
     const end = new Date(start);
@@ -104,7 +99,7 @@ export const DateRangePicker = ({
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {/* Start Date Trigger */}
         <div>
-          <span className="block text-[11px] font-medium text-ink-500 uppercase tracking-wider mb-1">Start date</span>
+          <span className="block text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Start Date</span>
           <button
             type="button"
             onClick={() => {
@@ -112,10 +107,10 @@ export const DateRangePicker = ({
               setIsOpen(true);
             }}
             className={`
-              w-full flex items-center justify-between bg-surface-sunken text-left px-3.5 py-2.5 rounded-md min-h-[44px]
-              shadow-neo-pressed border transition-all duration-150 outline-none
-              ${activeTab === 'start' && isOpen ? 'border-accent-400 ring-2 ring-accent-400/30' : 'border-accent-200/50 hover:border-accent-300'}
-              ${startDate ? 'text-ink-900 font-semibold' : 'text-ink-500/70 font-normal'}
+              w-full flex items-center justify-between bg-white text-left px-3.5 py-2.5 rounded-md min-h-[42px]
+              border shadow-sm transition-all duration-150 outline-none cursor-pointer
+              ${activeTab === 'start' && isOpen ? 'border-accent-400 ring-2 ring-accent-400/20' : 'border-slate-300 hover:border-slate-400'}
+              ${startDate ? 'text-ink-900 font-semibold' : 'text-slate-400 font-normal'}
             `}
           >
             <div className="flex items-center gap-2 overflow-hidden">
@@ -127,7 +122,7 @@ export const DateRangePicker = ({
 
         {/* End Date Trigger */}
         <div>
-          <span className="block text-[11px] font-medium text-ink-500 uppercase tracking-wider mb-1">End date</span>
+          <span className="block text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1">End Date</span>
           <button
             type="button"
             onClick={() => {
@@ -135,10 +130,10 @@ export const DateRangePicker = ({
               setIsOpen(true);
             }}
             className={`
-              w-full flex items-center justify-between bg-surface-sunken text-left px-3.5 py-2.5 rounded-md min-h-[44px]
-              shadow-neo-pressed border transition-all duration-150 outline-none
-              ${activeTab === 'end' && isOpen ? 'border-accent-400 ring-2 ring-accent-400/30' : 'border-accent-200/50 hover:border-accent-300'}
-              ${endDate ? 'text-ink-900 font-semibold' : 'text-ink-500/70 font-normal'}
+              w-full flex items-center justify-between bg-white text-left px-3.5 py-2.5 rounded-md min-h-[42px]
+              border shadow-sm transition-all duration-150 outline-none cursor-pointer
+              ${activeTab === 'end' && isOpen ? 'border-accent-400 ring-2 ring-accent-400/20' : 'border-slate-300 hover:border-slate-400'}
+              ${endDate ? 'text-ink-900 font-semibold' : 'text-slate-400 font-normal'}
               ${error ? 'border-semantic-danger ring-1 ring-semantic-danger' : ''}
             `}
           >
@@ -156,19 +151,17 @@ export const DateRangePicker = ({
         </p>
       )}
 
-      {/* Connected Floating Calendar Popover */}
+      {/* Floating Calendar Popover */}
       {isOpen && (
-        <div className="absolute top-full left-0 mt-2 z-50 w-full sm:w-[340px] bg-surface-raised border border-accent-200 shadow-neo-floating rounded-xl p-4 animate-fade-in-up">
+        <div className="absolute top-full left-0 mt-2 z-50 w-full sm:w-[340px] bg-white border border-slate-200 shadow-popover rounded-xl p-4 animate-fade-in-up">
           {/* Header */}
-          <div className="flex items-center justify-between mb-3 pb-2 border-b border-ink-300/20">
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-semibold uppercase text-accent-700 bg-accent-100 px-2 py-0.5 rounded-sm">
-                Selecting {activeTab === 'start' ? 'Start Date' : 'End Date'}
-              </span>
-            </div>
+          <div className="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
+            <span className="text-xs font-semibold uppercase text-accent-700 bg-accent-50 px-2 py-0.5 rounded-sm">
+              Selecting {activeTab === 'start' ? 'Start Date' : 'End Date'}
+            </span>
             <button
               onClick={() => setIsOpen(false)}
-              className="text-ink-500 hover:text-ink-900 p-1 rounded-full hover:bg-surface-sunken"
+              className="text-slate-400 hover:text-slate-700 p-1 rounded-full hover:bg-slate-100"
             >
               <X className="w-4 h-4" />
             </button>
@@ -178,7 +171,7 @@ export const DateRangePicker = ({
           <div className="flex items-center justify-between mb-3">
             <button
               onClick={handlePrevMonth}
-              className="p-1.5 rounded-md bg-surface-raised shadow-neo-raised hover:bg-accent-50 active:shadow-neo-pressed text-ink-700"
+              className="p-1.5 rounded-md bg-slate-50 border border-slate-200 hover:bg-slate-100 text-slate-700"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
@@ -187,50 +180,47 @@ export const DateRangePicker = ({
             </span>
             <button
               onClick={handleNextMonth}
-              className="p-1.5 rounded-md bg-surface-raised shadow-neo-raised hover:bg-accent-50 active:shadow-neo-pressed text-ink-700"
+              className="p-1.5 rounded-md bg-slate-50 border border-slate-200 hover:bg-slate-100 text-slate-700"
             >
               <ChevronRight className="w-4 h-4" />
             </button>
           </div>
 
           {/* Weekday headers */}
-          <div className="grid grid-cols-7 gap-1 text-center mb-1 text-[11px] font-semibold text-ink-500">
+          <div className="grid grid-cols-7 gap-1 text-center mb-1 text-[11px] font-semibold text-slate-400">
             <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
           </div>
 
           {/* Calendar Grid */}
           <div className="grid grid-cols-7 gap-1">
-            {/* Blank offset days */}
             {Array.from({ length: firstDayOfMonth }).map((_, i) => (
-              <div key={`empty-${i}`} className="h-8 text-xs text-ink-300 flex items-center justify-center opacity-30">
+              <div key={`empty-${i}`} className="h-8 text-xs text-slate-300 flex items-center justify-center opacity-40">
                 {prevMonthDays - firstDayOfMonth + i + 1}
               </div>
             ))}
 
-            {/* Days in Month */}
             {Array.from({ length: daysInMonth }).map((_, i) => {
               const dayNum = i + 1;
               const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(dayNum).padStart(2, '0')}`;
               
               const isStart = startDate === dateStr;
               const isEnd = endDate === dateStr;
-              
               const inRange = startDate && endDate &&
                 new Date(dateStr) > new Date(startDate) &&
                 new Date(dateStr) < new Date(endDate);
 
-              let cellStyle = "bg-surface-raised text-ink-900 hover:bg-accent-100 hover:text-accent-800";
+              let cellStyle = "bg-white text-slate-700 hover:bg-slate-100";
               if (isStart || isEnd) {
                 cellStyle = "bg-accent-400 text-white font-bold shadow-sm";
               } else if (inRange) {
-                cellStyle = "bg-accent-100 text-accent-800 font-medium rounded-none";
+                cellStyle = "bg-accent-50 text-accent-800 font-medium rounded-none";
               }
 
               return (
                 <button
                   key={`day-${dayNum}`}
                   onClick={() => handleSelectDay(dayNum)}
-                  className={`h-8 w-full text-xs rounded-md transition-all flex items-center justify-center ${cellStyle}`}
+                  className={`h-8 w-full text-xs rounded-md transition-all flex items-center justify-center cursor-pointer ${cellStyle}`}
                 >
                   {dayNum}
                 </button>
@@ -239,24 +229,24 @@ export const DateRangePicker = ({
           </div>
 
           {/* Quick presets */}
-          <div className="mt-3 pt-2.5 border-t border-ink-300/20 flex items-center justify-between text-xs">
-            <span className="text-ink-500 font-medium">Quick pick:</span>
+          <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-xs">
+            <span className="text-slate-500 font-medium">Presets:</span>
             <div className="flex gap-1.5">
               <button
                 onClick={() => handleQuickPreset(3)}
-                className="px-2 py-1 rounded bg-surface-sunken hover:bg-accent-100 text-ink-700 hover:text-accent-800 font-medium text-[11px]"
+                className="px-2 py-1 rounded bg-slate-100 hover:bg-accent-100 text-slate-700 hover:text-accent-800 font-medium text-[11px] cursor-pointer"
               >
                 3 Days
               </button>
               <button
                 onClick={() => handleQuickPreset(7)}
-                className="px-2 py-1 rounded bg-surface-sunken hover:bg-accent-100 text-ink-700 hover:text-accent-800 font-medium text-[11px]"
+                className="px-2 py-1 rounded bg-slate-100 hover:bg-accent-100 text-slate-700 hover:text-accent-800 font-medium text-[11px] cursor-pointer"
               >
                 1 Week
               </button>
               <button
                 onClick={() => handleQuickPreset(14)}
-                className="px-2 py-1 rounded bg-surface-sunken hover:bg-accent-100 text-ink-700 hover:text-accent-800 font-medium text-[11px]"
+                className="px-2 py-1 rounded bg-slate-100 hover:bg-accent-100 text-slate-700 hover:text-accent-800 font-medium text-[11px] cursor-pointer"
               >
                 2 Weeks
               </button>

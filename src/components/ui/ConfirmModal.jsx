@@ -7,26 +7,24 @@ export const ConfirmModal = ({
   title = "Are you sure?",
   message = "This action cannot be undone.",
   confirmLabel = "Discard",
-  cancelLabel = "Keep editing",
+  cancelLabel = "Keep Editing",
   onConfirm,
   onCancel,
-  variant = "danger" // "danger" | "primary"
+  variant = "danger"
 }) => {
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      {/* Backdrop Scrim */}
       <div
         onClick={onCancel}
-        className="absolute inset-0 bg-ink-900/40 backdrop-blur-xs transition-opacity animate-fade-in-up"
+        className="absolute inset-0 bg-slate-900/40 backdrop-blur-xs transition-opacity animate-fade-in-up"
       />
 
-      {/* Floating Modal Content */}
-      <div className="relative bg-surface-raised border border-accent-200 shadow-neo-floating rounded-xl max-w-md w-full p-6 z-10 animate-fade-in-up">
+      <div className="relative bg-white border border-slate-200 shadow-popover rounded-xl max-w-md w-full p-6 z-10 animate-fade-in-up">
         <button
           onClick={onCancel}
-          className="absolute top-4 right-4 text-ink-500 hover:text-ink-900 p-1 rounded-full hover:bg-surface-sunken"
+          className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 p-1 rounded-full hover:bg-slate-100 cursor-pointer"
         >
           <X className="w-4 h-4" />
         </button>
@@ -39,14 +37,13 @@ export const ConfirmModal = ({
             <h3 className="font-display font-semibold text-lg text-ink-900 leading-snug">
               {title}
             </h3>
-            <p className="text-sm text-ink-700 font-sans mt-1 leading-relaxed">
+            <p className="text-sm text-slate-600 font-sans mt-1 leading-relaxed">
               {message}
             </p>
           </div>
         </div>
 
-        {/* Footer CTAs */}
-        <div className="flex items-center justify-end gap-3 pt-3 border-t border-ink-300/20">
+        <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
           <Button variant="ghost" onClick={onCancel}>
             {cancelLabel}
           </Button>
