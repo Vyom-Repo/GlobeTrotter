@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Mail, LogIn } from 'lucide-react';
 import FormField from '../components/FormField';
 import PasswordField from '../components/PasswordField';
@@ -7,6 +8,7 @@ import ProfileImageUploader from '../components/ProfileImageUploader';
 import authService from '../services/authService';
 
 export function LoginForm({ onSwitchToRegister, onLoginSuccess }) {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -45,10 +47,9 @@ export function LoginForm({ onSwitchToRegister, onLoginSuccess }) {
     try {
       const response = await authService.login(formData.email.trim(), formData.password);
       if (onLoginSuccess) {
-        onLoginSuccess(response.user);
-      } else {
-        alert(`Welcome back, ${response.user?.name || 'Explorer'}!`);
+        onLoginSuccess(response.user || response);
       }
+      navigate('/dashboard');
     } catch (err) {
       setErrors({ form: err.message || 'Invalid email or password. Please try again.' });
     } finally {

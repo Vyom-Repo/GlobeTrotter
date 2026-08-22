@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { User, Mail, Phone, MapPin, Globe, FileText, UserPlus } from 'lucide-react';
 import FormField from '../components/FormField';
 import PasswordField from '../components/PasswordField';
@@ -7,6 +8,7 @@ import ProfileImageUploader from '../components/ProfileImageUploader';
 import authService from '../services/authService';
 
 export function RegisterForm({ onSwitchToLogin, onRegisterSuccess }) {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -74,12 +76,10 @@ export function RegisterForm({ onSwitchToLogin, onRegisterSuccess }) {
       };
 
       const response = await authService.register(payload);
-      alert('Registration successful! Welcome to GlobeTrotter.');
       if (onRegisterSuccess) {
-        onRegisterSuccess(response.user);
-      } else if (onSwitchToLogin) {
-        onSwitchToLogin();
+        onRegisterSuccess(response.user || response);
       }
+      navigate('/dashboard');
     } catch (err) {
       setErrors({ form: err.message || 'Registration failed. Please try again.' });
     } finally {

@@ -10,13 +10,14 @@ export const authService = {
       method: 'POST',
       body: JSON.stringify(userData),
     });
-    if (data.access_token) {
-      localStorage.setItem('token', data.access_token);
-      if (data.user) {
-        localStorage.setItem('user', JSON.stringify(data.user));
+    const payload = data.data || data;
+    if (payload.access_token) {
+      localStorage.setItem('token', payload.access_token);
+      if (payload.user) {
+        localStorage.setItem('user', JSON.stringify(payload.user));
       }
     }
-    return data;
+    return payload;
   },
 
   /**
@@ -29,22 +30,24 @@ export const authService = {
       method: 'POST',
       body: JSON.stringify({ email, password }),
     });
-    if (data.access_token) {
-      localStorage.setItem('token', data.access_token);
-      if (data.user) {
-        localStorage.setItem('user', JSON.stringify(data.user));
+    const payload = data.data || data;
+    if (payload.access_token) {
+      localStorage.setItem('token', payload.access_token);
+      if (payload.user) {
+        localStorage.setItem('user', JSON.stringify(payload.user));
       }
     }
-    return data;
+    return payload;
   },
 
   /**
    * Fetch currently authenticated user profile.
    */
   async getCurrentUser() {
-    const user = await apiRequest('/api/v1/users/me', {
+    const res = await apiRequest('/api/v1/users/me', {
       method: 'GET',
     });
+    const user = res.data || res;
     if (user) {
       localStorage.setItem('user', JSON.stringify(user));
     }

@@ -4,7 +4,19 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000
  * Centralized API client for GlobeTrotter backend calls.
  */
 export async function apiRequest(endpoint, options = {}) {
-  const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint}`;
+  let cleanEndpoint = endpoint;
+  if (cleanEndpoint.startsWith('/api/v1/')) {
+    cleanEndpoint = cleanEndpoint.replace('/api/v1', '');
+  } else if (cleanEndpoint.startsWith('api/v1/')) {
+    cleanEndpoint = cleanEndpoint.replace('api/v1', '');
+  }
+
+  if (!cleanEndpoint.startsWith('/') && !cleanEndpoint.startsWith('http')) {
+    cleanEndpoint = '/' + cleanEndpoint;
+  }
+
+  const baseUrl = API_BASE_URL.replace(/\/+$/, '');
+  const url = endpoint.startsWith('http') ? endpoint : `${baseUrl}${cleanEndpoint}`;
 
   const token = localStorage.getItem('token');
   const headers = {
