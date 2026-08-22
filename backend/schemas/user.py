@@ -24,3 +24,19 @@ class UserResponse(UserBase):
     updated_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
+class UserPreferenceBase(BaseModel):
+    language: str = "en"
+    currency: str = "INR"
+
+class UserPreferenceUpdate(BaseModel):
+    language: Optional[str] = None
+    currency: Optional[str] = None
+
+class UserPreferenceResponse(UserPreferenceBase):
+    id: UUID
+    user_id: UUID
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)

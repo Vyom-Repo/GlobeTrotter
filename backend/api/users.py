@@ -1,10 +1,11 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 
 from backend.core.dependencies import get_db, get_current_user
 from backend.models.user import User
 from backend.schemas.common import SuccessResponse
-from backend.schemas.user import UserResponse, UserUpdate
+from backend.schemas.user import UserResponse, UserUpdate, UserPreferenceResponse, UserPreferenceUpdate
+from backend.services.user_service import UserService
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
@@ -20,13 +21,25 @@ def update_user_profile(
     db: Session = Depends(get_db)
 ):
     """Update profile details of the current authenticated user."""
-    if user_update.name is not None:
-        current_user.name = user_update.name
-    if user_update.email is not None:
-        current_user.email = user_update.email
-    if user_update.profile_photo_url is not None:
-        current_user.profile_photo_url = user_update.profile_photo_url
+    updated_user = UserService.update_profile(db, current_user, user_update)
+    return SuccessResponse(data=UserResponse.model_validate(updated_user))
 
-    db.commit()
-    db.refresh(current_user)
-    return SuccessResponse(data=UserResponse.model_validate(current_user))
+@router.get("/me/preferences", response_model=SuccessResponse[UserPreferenceResponse])
+def get_user_preferences(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Fetch preferences (language, currency) for the current authenticated user."""
+    pref = UserService.get_preferences(db, current_user)
+    return SuccessResponse(data=UserPreferenceResponse.model_validate(pref))
+
+@router.put("/me/preferences", response_model=SuccessResponse[UserPreferenceResponse])
+@router.patch("/me/preferences", response_model=SuccessResponse[UserPreferenceResponse])
+def update_user_preferences(
+    pref_update: UserPreferenceUpdate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Update preferences (language, currency) for the current authenticated user."""
+    updated_pref = UserService.update_preferences(db, current_user, pref_update)
+    return SuccessResponse(data=UserPreferenceResponse.model_validate(updated_pref))
