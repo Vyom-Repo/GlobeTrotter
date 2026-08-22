@@ -1,11 +1,46 @@
-from fastapi import APIRouter
+from uuid import UUID
+from fastapi import APIRouter, Depends, Query, status
+from sqlalchemy.orm import Session
 
-router = APIRouter(prefix="/trips", tags=["trips"])
+from backend.core.dependencies import get_db, get_current_user, get_current_user_optional
+from backend.models.user import User
+from backend.schemas.common import PaginatedResponse, PaginationMeta, SuccessResponse
+from backend.schemas.trip import TripCreate, TripResponse
+from backend.services.trip_service import TripService
 
-@router.get("/")
-def list_trips():
-    return []
+router = APIRouter(prefix="/trips", tags=["Trips"])
 
-@router.post("/")
-def create_trip():
-    return {"message": "Create trip placeholder"}
+@router.get("", response_model=PaginatedResponse[TripResponse])
+def list_trips(
+    page: int = Query(1, ge=1),
+    page_size: int = Query(20, ge=1, le=100),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """List all trips created by the current authenticated user."""
+    trips, total = TripService.get_user_trips(db, current_user, page, page_size)
+    total_pages = (total + page_size - 1) // page_size if total > 0 else 0
+    return PaginatedResponse(
+        data=[TripResponse.model_validate(t) for t in trips],
+        pagination=PaginationMeta(page=page, page_size=page_size, total=total, total_pages=total_pages)
+    )
+
+@router.post("", response_model=SuccessResponse[TripResponse], status_code=status.HTTP_201_CREATED)
+def create_trip(
+    trip_in: TripCreate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Create a new travel trip for the current authenticated user."""
+    trip = TripService.create_trip(db, current_user, trip_in)
+    return SuccessResponse(data=TripResponse.model_validate(trip))
+
+@router.get("/{trip_id}", response_model=SuccessResponse[TripResponse])
+def get_trip(
+    trip_id: UUID,
+    current_user: User = Depends(get_current_user_optional),
+    db: Session = Depends(get_db)
+):
+    """Retrieve trip details by ID (authenticated owner or public visibility)."""
+    trip = TripService.get_trip_by_id(db, trip_id, current_user)
+    return SuccessResponse(data=TripResponse.model_validate(trip))

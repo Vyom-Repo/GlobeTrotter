@@ -1,20 +1,25 @@
+import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+
+from backend.api.router import api_router
 from backend.core.config import settings
-from backend.api import auth, users, trips, cities, stops, activities, budgets
+from backend.core.exceptions import setup_exception_handlers
+
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+logger = logging.getLogger(__name__)
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
+    description="GlobeTrotter Backend API for offline trip planning, itinerary management, and budget analytics.",
+    version="1.0.0",
     openapi_url=f"{settings.API_V1_STR}/openapi.json",
-    description="GlobeTrotter API for trip planning, itineraries, and travel budgets."
+    docs_url="/docs",
+    redoc_url="/redoc"
 )
 
-# CORS middleware
-origins = [
-    "http://localhost:3000",
-    "http://localhost:5173",
-    "http://127.0.0.1:5173",
-]
+# Configure CORS middleware
+origins = settings.CORS_ORIGINS if isinstance(settings.CORS_ORIGINS, list) else [settings.CORS_ORIGINS]
 
 app.add_middleware(
     CORSMiddleware,
@@ -24,19 +29,23 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Include API routers
-app.include_router(auth.router, prefix=settings.API_V1_STR)
-app.include_router(users.router, prefix=settings.API_V1_STR)
-app.include_router(trips.router, prefix=settings.API_V1_STR)
-app.include_router(cities.router, prefix=settings.API_V1_STR)
-app.include_router(stops.router, prefix=settings.API_V1_STR)
-app.include_router(activities.router, prefix=settings.API_V1_STR)
-app.include_router(budgets.router, prefix=settings.API_V1_STR)
+# Register global exception handlers
+setup_exception_handlers(app)
 
-@app.get("/")
+# Include centralized API v1 router
+app.include_router(api_router)
+
+@app.get("/", tags=["Health"])
 def root():
-    return {"message": "Welcome to GlobeTrotter API", "docs": "/docs"}
+    """API Welcome root endpoint."""
+    return {
+        "message": "Welcome to GlobeTrotter API",
+        "docs": "/docs",
+        "health": "/health",
+        "version": "1.0.0"
+    }
 
-@app.get("/health")
+@app.get("/health", tags=["Health"])
 def health_check():
-    return {"status": "healthy"}
+    """Health check endpoint indicating backend process status."""
+    return {"status": "ok"}
