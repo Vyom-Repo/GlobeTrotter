@@ -555,3 +555,5 @@ export const Screen07_UserProfile = ({
     </div>
   );
 };
+
+export default Screen07_UserProfile;
