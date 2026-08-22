@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
-import { User, LogIn } from 'lucide-react';
+import { Mail, LogIn } from 'lucide-react';
 import FormField from '../components/FormField';
 import PasswordField from '../components/PasswordField';
 import PrimaryButton from '../components/PrimaryButton';
 import ProfileImageUploader from '../components/ProfileImageUploader';
+import authService from '../services/authService';
 
-export function LoginForm({ onSwitchToRegister }) {
+export function LoginForm({ onSwitchToRegister, onLoginSuccess }) {
   const [formData, setFormData] = useState({
-    username: '',
+    email: '',
     password: '',
   });
 
@@ -24,8 +25,8 @@ export function LoginForm({ onSwitchToRegister }) {
 
   const validate = () => {
     const newErrors = {};
-    if (!formData.username.trim()) {
-      newErrors.username = 'Username or Email is required';
+    if (!formData.email.trim()) {
+      newErrors.email = 'Email address is required';
     }
     if (!formData.password) {
       newErrors.password = 'Password is required';
@@ -39,12 +40,17 @@ export function LoginForm({ onSwitchToRegister }) {
     if (!validate()) return;
 
     setIsLoading(true);
+    setErrors({});
+
     try {
-      await new Promise((resolve) => setTimeout(resolve, 800));
-      localStorage.setItem('token', 'demo-token');
-      alert('Login successful! Welcome to GlobeTrotter.');
+      const response = await authService.login(formData.email.trim(), formData.password);
+      if (onLoginSuccess) {
+        onLoginSuccess(response.user);
+      } else {
+        alert(`Welcome back, ${response.user?.name || 'Explorer'}!`);
+      }
     } catch (err) {
-      setErrors({ form: 'Invalid username or password. Please try again.' });
+      setErrors({ form: err.message || 'Invalid email or password. Please try again.' });
     } finally {
       setIsLoading(false);
     }
@@ -79,16 +85,16 @@ export function LoginForm({ onSwitchToRegister }) {
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="p-4 bg-accent-50/40 rounded-2xl border border-accent-100/60 space-y-3.5">
           <FormField
-            id="login-username"
-            label="Username"
-            type="text"
-            value={formData.username}
-            onChange={(e) => handleChange('username', e.target.value)}
-            placeholder="Username or email"
-            error={errors.username}
+            id="login-email"
+            label="Email Address"
+            type="email"
+            value={formData.email}
+            onChange={(e) => handleChange('email', e.target.value)}
+            placeholder="jane@example.com"
+            error={errors.email}
             required
-            autoComplete="username"
-            icon={User}
+            autoComplete="email"
+            icon={Mail}
           />
 
           <PasswordField
@@ -105,7 +111,7 @@ export function LoginForm({ onSwitchToRegister }) {
           <div className="flex justify-end pt-1">
             <button
               type="button"
-              onClick={() => alert('Password reset affordance: Please contact support or use registration email.')}
+              onClick={() => alert('Password reset affordance: Please contact support or register a new account.')}
               className="text-xs font-medium text-accent-600 hover:text-accent-800 italic transition"
             >
               Forgot Password?
@@ -115,7 +121,7 @@ export function LoginForm({ onSwitchToRegister }) {
 
         <div className="pt-1">
           <PrimaryButton type="submit" isLoading={isLoading} icon={LogIn}>
-            Login Button
+            Sign In
           </PrimaryButton>
         </div>
       </form>
@@ -130,7 +136,7 @@ export function LoginForm({ onSwitchToRegister }) {
               onClick={onSwitchToRegister}
               className="font-medium text-accent-600 hover:text-accent-800 underline italic"
             >
-              Register Users
+              Create Account
             </button>
           </p>
         </div>

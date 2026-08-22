@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from backend.core.exceptions import BadRequestException, UnauthorizedException
 from backend.core.security import create_access_token, get_password_hash, verify_password
 from backend.models.user import User
+from backend.models.user_preference import UserPreference
 from backend.schemas.auth import LoginRequest
 from backend.schemas.user import UserCreate
 
@@ -12,18 +13,28 @@ class AuthService:
 
     @staticmethod
     def register_user(db: Session, user_in: UserCreate) -> Tuple[User, str]:
-        existing_user = db.query(User).filter(User.email == user_in.email).first()
+        normalized_email = user_in.email.lower().strip()
+        existing_user = db.query(User).filter(User.email == normalized_email).first()
         if existing_user:
-            raise BadRequestException(message="A user with this email address already exists.", code="USER_ALREADY_EXISTS")
+            raise BadRequestException(
+                message="An account with this email already exists.",
+                code="EMAIL_ALREADY_EXISTS"
+            )
 
         hashed_password = get_password_hash(user_in.password)
         db_user = User(
-            name=user_in.name,
-            email=user_in.email,
+            name=user_in.name.strip(),
+            email=normalized_email,
             password_hash=hashed_password,
             profile_photo_url=user_in.profile_photo_url
         )
         db.add(db_user)
+        db.flush()
+
+        # Initialize default user preferences
+        preferences = UserPreference(user_id=db_user.id)
+        db.add(preferences)
+
         db.commit()
         db.refresh(db_user)
 
@@ -32,12 +43,19 @@ class AuthService:
 
     @staticmethod
     def authenticate_user(db: Session, login_data: LoginRequest) -> Tuple[User, str]:
-        user = db.query(User).filter(User.email == login_data.email).first()
+        normalized_email = login_data.email.lower().strip()
+        user = db.query(User).filter(User.email == normalized_email).first()
         if not user or not verify_password(login_data.password, user.password_hash):
-            raise UnauthorizedException(message="Invalid email or password credentials.", code="INVALID_CREDENTIALS")
+            raise UnauthorizedException(
+                message="Invalid email or password credentials.",
+                code="INVALID_CREDENTIALS"
+            )
 
         if not user.is_active:
-            raise UnauthorizedException(message="User account is deactivated.", code="ACCOUNT_DEACTIVATED")
+            raise UnauthorizedException(
+                message="User account is deactivated.",
+                code="ACCOUNT_DEACTIVATED"
+            )
 
         token = create_access_token(subject=user.id)
         return user, token

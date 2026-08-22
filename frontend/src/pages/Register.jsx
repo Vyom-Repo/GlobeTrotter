@@ -1,14 +1,17 @@
 import React, { useState } from 'react';
 import { User, Mail, Phone, MapPin, Globe, FileText, UserPlus } from 'lucide-react';
 import FormField from '../components/FormField';
+import PasswordField from '../components/PasswordField';
 import PrimaryButton from '../components/PrimaryButton';
 import ProfileImageUploader from '../components/ProfileImageUploader';
+import authService from '../services/authService';
 
-export function RegisterForm({ onSwitchToLogin }) {
+export function RegisterForm({ onSwitchToLogin, onRegisterSuccess }) {
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
     email: '',
+    password: '',
     phone: '',
     city: '',
     country: '',
@@ -44,18 +47,10 @@ export function RegisterForm({ onSwitchToLogin }) {
       newErrors.email = 'Please enter a valid email address';
     }
 
-    if (!formData.phone.trim()) {
-      newErrors.phone = 'Phone Number is required';
-    } else if (!/^[0-9+\-\s()]{7,20}$/.test(formData.phone.trim())) {
-      newErrors.phone = 'Please enter a valid phone number';
-    }
-
-    if (!formData.city.trim()) {
-      newErrors.city = 'City is required';
-    }
-
-    if (!formData.country.trim()) {
-      newErrors.country = 'Country is required';
+    if (!formData.password) {
+      newErrors.password = 'Password is required';
+    } else if (formData.password.length < 6) {
+      newErrors.password = 'Password must be at least 6 characters long';
     }
 
     setErrors(newErrors);
@@ -67,12 +62,26 @@ export function RegisterForm({ onSwitchToLogin }) {
     if (!validate()) return;
 
     setIsLoading(true);
+    setErrors({});
+
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      alert('Registration successful! Please log in with your credentials.');
-      if (onSwitchToLogin) onSwitchToLogin();
+      const fullName = `${formData.firstName.trim()} ${formData.lastName.trim()}`.trim();
+      const payload = {
+        name: fullName,
+        email: formData.email.trim(),
+        password: formData.password,
+        profile_photo_url: profileImagePreview || null,
+      };
+
+      const response = await authService.register(payload);
+      alert('Registration successful! Welcome to GlobeTrotter.');
+      if (onRegisterSuccess) {
+        onRegisterSuccess(response.user);
+      } else if (onSwitchToLogin) {
+        onSwitchToLogin();
+      }
     } catch (err) {
-      setErrors({ form: 'Registration failed. Please try again.' });
+      setErrors({ form: err.message || 'Registration failed. Please try again.' });
     } finally {
       setIsLoading(false);
     }
@@ -96,7 +105,7 @@ export function RegisterForm({ onSwitchToLogin }) {
 
       <div className="text-center mb-3">
         <h2 className="text-xl sm:text-2xl font-semibold text-slate-900 italic tracking-tight">
-          Registration Screen
+          Create Account
         </h2>
         <p className="text-xs text-slate-500 italic mt-0.5 font-normal">
           Fill in your details to join GlobeTrotter
@@ -138,7 +147,7 @@ export function RegisterForm({ onSwitchToLogin }) {
             />
           </div>
 
-          {/* Row 2: Email Address | Phone Number */}
+          {/* Row 2: Email Address | Password */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             <FormField
               id="reg-email"
@@ -152,17 +161,15 @@ export function RegisterForm({ onSwitchToLogin }) {
               autoComplete="email"
               icon={Mail}
             />
-            <FormField
-              id="reg-phone"
-              label="Phone Number"
-              type="tel"
-              value={formData.phone}
-              onChange={(e) => handleChange('phone', e.target.value)}
-              placeholder="+1 555-0199"
-              error={errors.phone}
+            <PasswordField
+              id="reg-password"
+              label="Password"
+              value={formData.password}
+              onChange={(e) => handleChange('password', e.target.value)}
+              placeholder="••••••••"
+              error={errors.password}
               required
-              autoComplete="tel"
-              icon={Phone}
+              autoComplete="new-password"
             />
           </div>
 
@@ -175,7 +182,6 @@ export function RegisterForm({ onSwitchToLogin }) {
               onChange={(e) => handleChange('city', e.target.value)}
               placeholder="Paris"
               error={errors.city}
-              required
               autoComplete="address-level2"
               icon={MapPin}
             />
@@ -186,7 +192,6 @@ export function RegisterForm({ onSwitchToLogin }) {
               onChange={(e) => handleChange('country', e.target.value)}
               placeholder="France"
               error={errors.country}
-              required
               autoComplete="country-name"
               icon={Globe}
             />
@@ -213,7 +218,7 @@ export function RegisterForm({ onSwitchToLogin }) {
             icon={UserPlus}
             className="sm:max-w-xs"
           >
-            Register Users
+            Create Account
           </PrimaryButton>
         </div>
       </form>

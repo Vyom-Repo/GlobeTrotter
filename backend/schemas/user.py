@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Optional
 from uuid import UUID
-from pydantic import BaseModel, EmailStr, ConfigDict
+from pydantic import BaseModel, EmailStr, ConfigDict, Field
 
 class UserBase(BaseModel):
     name: str
@@ -9,7 +9,7 @@ class UserBase(BaseModel):
     profile_photo_url: Optional[str] = None
 
 class UserCreate(UserBase):
-    password: str
+    password: str = Field(..., min_length=6, description="Raw user password")
 
 class UserUpdate(BaseModel):
     name: Optional[str] = None

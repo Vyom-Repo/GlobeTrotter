@@ -1,10 +1,8 @@
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, Optional, Union
+import bcrypt
 from jose import JWTError, jwt
-from passlib.context import CryptContext
 from backend.core.config import settings
-
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 def create_access_token(subject: Union[str, Any], expires_delta: Optional[timedelta] = None) -> str:
     """Create a signed JWT access token."""
@@ -30,9 +28,23 @@ def decode_token(token: str) -> Optional[Dict[str, Any]]:
         return None
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """Verify a raw password against its hashed value."""
-    return pwd_context.verify(plain_password, hashed_password)
+    """Verify a raw password against its hashed value using bcrypt."""
+    if not plain_password or not hashed_password:
+        return False
+    plain_bytes = plain_password.encode('utf-8')
+    if len(plain_bytes) > 72:
+        plain_bytes = plain_bytes[:72]
+    hashed_bytes = hashed_password.encode('utf-8')
+    try:
+        return bcrypt.checkpw(plain_bytes, hashed_bytes)
+    except Exception:
+        return False
 
 def get_password_hash(password: str) -> str:
     """Hash a password securely using bcrypt."""
-    return pwd_context.hash(password)
+    pwd_bytes = password.encode('utf-8')
+    if len(pwd_bytes) > 72:
+        pwd_bytes = pwd_bytes[:72]
+    salt = bcrypt.gensalt()
+    hashed = bcrypt.hashpw(pwd_bytes, salt)
+    return hashed.decode('utf-8')

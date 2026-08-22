@@ -10,6 +10,8 @@ from backend.models.user import User
 
 security_scheme = HTTPBearer(auto_error=False)
 
+import uuid
+
 def get_current_user(
     credentials: Optional[HTTPAuthorizationCredentials] = Security(security_scheme),
     db: Session = Depends(get_db)
@@ -23,7 +25,11 @@ def get_current_user(
     if not payload or "sub" not in payload:
         raise UnauthorizedException(message="Invalid or expired authentication token", code="INVALID_TOKEN")
     
-    user_id = payload["sub"]
+    try:
+        user_id = uuid.UUID(str(payload["sub"]))
+    except (ValueError, TypeError):
+        raise UnauthorizedException(message="Invalid user ID format in token", code="INVALID_TOKEN")
+
     user = db.query(User).filter(User.id == user_id, User.is_active == True).first()
     if not user:
         raise UnauthorizedException(message="User account not found or deactivated", code="USER_NOT_FOUND")
