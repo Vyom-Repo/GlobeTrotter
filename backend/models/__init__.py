@@ -11,6 +11,7 @@ from backend.models.saved_destination import SavedDestination
 from backend.models.trip_share import TripShare, SharePermission
 from backend.models.notification import Notification, NotificationType
 from backend.models.user_activity import UserActivity
+from backend.models.report import Report, ReportTargetType, ReportStatus
 
 __all__ = [
     "User",
@@ -30,4 +31,7 @@ __all__ = [
     "Notification",
     "NotificationType",
     "UserActivity",
+    "Report",
+    "ReportTargetType",
+    "ReportStatus",
 ]

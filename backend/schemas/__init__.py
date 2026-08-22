@@ -19,6 +19,9 @@ from backend.schemas.search import (
     SearchResultItem, UnifiedSearchResponse,
     RecommendationItem, RecommendationListResponse
 )
+from backend.schemas.admin import (
+    ReportCreate, ReportResolveRequest, ReportResponse, AdminStatsResponse
+)
 
 __all__ = [
     "SuccessResponse",
@@ -67,4 +70,8 @@ __all__ = [
     "UnifiedSearchResponse",
     "RecommendationItem",
     "RecommendationListResponse",
+    "ReportCreate",
+    "ReportResolveRequest",
+    "ReportResponse",
+    "AdminStatsResponse",
 ]

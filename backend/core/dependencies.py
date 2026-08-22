@@ -1,16 +1,15 @@
+import uuid
 from typing import Optional
 from fastapi import Depends, Security
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session
 
-from backend.core.exceptions import UnauthorizedException
+from backend.core.exceptions import UnauthorizedException, ForbiddenException
 from backend.core.security import decode_token
 from backend.database.connection import get_db
 from backend.models.user import User
 
 security_scheme = HTTPBearer(auto_error=False)
-
-import uuid
 
 def get_current_user(
     credentials: Optional[HTTPAuthorizationCredentials] = Security(security_scheme),
@@ -35,6 +34,14 @@ def get_current_user(
         raise UnauthorizedException(message="User account not found or deactivated", code="USER_NOT_FOUND")
     
     return user
+
+def require_admin(
+    current_user: User = Depends(get_current_user)
+) -> User:
+    """FastAPI dependency enforcing administrator privilege."""
+    if not current_user.is_admin:
+        raise ForbiddenException(message="Administrator privileges required", code="ADMIN_REQUIRED")
+    return current_user
 
 def get_current_user_optional(
     credentials: Optional[HTTPAuthorizationCredentials] = Security(security_scheme),

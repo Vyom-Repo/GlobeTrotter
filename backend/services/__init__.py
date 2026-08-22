@@ -7,6 +7,7 @@ from backend.services.notification_service import NotificationService
 from backend.services.reminder_service import ReminderService
 from backend.services.search_service import SearchService
 from backend.services.recommendation_service import RecommendationService
+from backend.services.admin_service import AdminService
 
 __all__ = [
     "AuthService",
@@ -18,4 +19,5 @@ __all__ = [
     "ReminderService",
     "SearchService",
     "RecommendationService",
+    "AdminService",
 ]

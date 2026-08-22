@@ -14,6 +14,8 @@ from backend.api.trip_shares import router as trip_shares_router
 from backend.api.public import router as public_router
 from backend.api.notifications import router as notifications_router
 from backend.api.search import router as search_router
+from backend.api.admin import router as admin_router
+from backend.api.reports import router as reports_router
 
 api_router = APIRouter(prefix="/api/v1")
 
@@ -31,3 +33,5 @@ api_router.include_router(trip_shares_router)
 api_router.include_router(public_router)
 api_router.include_router(notifications_router)
 api_router.include_router(search_router)
+api_router.include_router(admin_router)
+api_router.include_router(reports_router)
