@@ -1,5 +1,7 @@
-import React from 'react';
-import { X, Calendar, MapPin, DollarSign, CheckCircle2, Share2, Printer } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import {
+  X, Calendar, MapPin, CheckCircle2, Share2, Printer, DollarSign, BookOpen, Layers, ZoomIn
+} from 'lucide-react';
 import { Button } from './Button';
 
 export const ItineraryPreviewModal = ({
@@ -7,157 +9,287 @@ export const ItineraryPreviewModal = ({
   onClose,
   tripData
 }) => {
-  if (!isOpen) return null;
+  const [isPhotoZoomed, setIsPhotoZoomed] = useState(false);
 
-  const totalCost = (tripData.stops || []).reduce((acc, stop) => {
-    const actTotal = (stop.activities || []).reduce((a, b) => a + (Number(b.cost) || 0), 0);
-    return acc + Math.max(Number(stop.budget) || 0, actTotal);
+  // Lock outer page background scroll when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen]);
+
+  if (!isOpen || !tripData) return null;
+
+  const stops = tripData.stops || [];
+
+  const totalPlannedActivitiesCost = stops.reduce((acc, stop) => {
+    const actSum = (stop.activities || []).reduce((a, b) => a + (Number(b.cost) || 0), 0);
+    return acc + actSum;
   }, 0);
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
-      {/* Backdrop */}
-      <div onClick={onClose} className="fixed inset-0 bg-ink-900/50 backdrop-blur-sm" />
+  const totalStopsBudget = stops.reduce((acc, stop) => acc + (Number(stop.budget) || 0), 0);
+  const displayTotalBudget = totalStopsBudget > 0 ? totalStopsBudget : tripData.targetBudget || 60000;
 
-      {/* Main Dialog */}
-      <div className="relative bg-surface-raised border border-accent-200 shadow-neo-floating rounded-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto z-10 animate-fade-in-up">
-        {/* Modal Header */}
-        <div className="sticky top-0 bg-surface-raised/95 backdrop-blur-md px-6 py-4 border-b border-ink-300/20 flex items-center justify-between z-20">
+  const coverPhoto = tripData.coverUrl || 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=1200&q=80';
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 overflow-y-auto bg-slate-950/70 backdrop-blur-md">
+
+      {/* Backdrop Click */}
+      <div onClick={onClose} className="fixed inset-0" />
+
+      {/* Main Journal Modal Card */}
+      <div className="relative bg-white border border-slate-200 shadow-2xl rounded-2xl max-w-4xl w-full my-auto z-10 animate-fade-in-up overflow-hidden flex flex-col">
+
+        {/* Sticky Header Bar */}
+        <div className="sticky top-0 bg-white/95 backdrop-blur-md px-6 py-4 border-b border-slate-100 flex items-center justify-between z-30 shadow-xs">
           <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold uppercase text-accent-700 bg-accent-100 px-2.5 py-1 rounded-full">
-              Screen 06 Preview · Journal View
+            <span className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-accent-700 bg-accent-50 px-3 py-1 rounded-full border border-accent-200">
+              <BookOpen className="w-3.5 h-3.5 text-accent-600" /> Travel Journal Timeline
             </span>
           </div>
+
           <div className="flex items-center gap-2">
             <button
-              onClick={() => alert("Itinerary link copied to clipboard!")}
-              className="p-2 text-ink-500 hover:text-accent-700 rounded-md hover:bg-accent-50"
-              title="Share itinerary"
+              onClick={() => alert("Itinerary share link copied to clipboard!")}
+              className="p-2 text-slate-500 hover:text-accent-700 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
+              title="Share Itinerary"
             >
-              <Share2 className="w-4 h-4" />
+              <Share2 className="w-4.5 h-4.5" />
             </button>
             <button
               onClick={() => window.print()}
-              className="p-2 text-ink-500 hover:text-accent-700 rounded-md hover:bg-accent-50"
-              title="Print itinerary"
+              className="p-2 text-slate-500 hover:text-accent-700 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
+              title="Print Itinerary"
             >
-              <Printer className="w-4 h-4" />
+              <Printer className="w-4.5 h-4.5" />
             </button>
+            <div className="w-px h-5 bg-slate-200 mx-1" />
             <button
               onClick={onClose}
-              className="p-2 text-ink-500 hover:text-ink-900 rounded-md hover:bg-surface-sunken"
+              className="p-2 text-slate-400 hover:text-slate-900 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
+              title="Close"
             >
               <X className="w-5 h-5" />
             </button>
           </div>
         </div>
 
-        {/* Modal Body: Styled Travel Journal */}
-        <div className="p-6 sm:p-8 space-y-6">
-          {/* Hero Banner */}
-          <div className="relative h-[220px] rounded-lg overflow-hidden shadow-neo-raised border border-accent-200/50">
+        {/* GORGEOUS JOURNAL CONTENT BODY */}
+        <div className="p-6 sm:p-10 space-y-8">
+
+          {/* HERO PICTURE SECTION WITH ZOOM-IN PHOTO & LIGHTBOX CLICK */}
+          <div
+            onClick={() => setIsPhotoZoomed(true)}
+            className="relative rounded-2xl overflow-hidden shadow-md border border-slate-200 bg-slate-900 min-h-[250px] sm:min-h-[300px] flex flex-col justify-end p-6 sm:p-8 group cursor-pointer"
+            title="Click to zoom image"
+          >
             <img
-              src={tripData.coverUrl || 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=1200&q=80'}
+              src={coverPhoto}
               alt={tripData.name}
-              className="w-full h-full object-cover"
+              className="absolute inset-0 w-full h-full object-cover opacity-85 group-hover:scale-105 transition-transform duration-700 ease-out"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-ink-900/80 via-ink-900/30 to-transparent" />
-            <div className="absolute bottom-5 left-6 right-6 text-white">
-              <span className="text-xs font-semibold uppercase tracking-wider text-accent-200 bg-ink-900/60 px-2.5 py-0.5 rounded backdrop-blur-sm">
-                GlobeTrotter Itinerary
-              </span>
-              <h1 className="font-display text-2xl sm:text-3xl font-bold mt-1.5 drop-shadow-md">
+            <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-900/40 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-r from-slate-950/60 via-transparent to-slate-950/40" />
+
+            {/* Picture Zoom Hint Overlay */}
+            <div className="absolute top-4 right-4 bg-slate-950/60 backdrop-blur-md border border-white/20 text-white text-xs font-semibold px-3 py-1.5 rounded-full opacity-80 group-hover:opacity-100 transition-opacity flex items-center gap-1.5 shadow-sm">
+              <ZoomIn className="w-3.5 h-3.5 text-accent-300" />
+              <span>Expand Photo</span>
+            </div>
+
+            <div className="relative z-10 space-y-2 text-white">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-xs font-bold uppercase tracking-widest text-accent-200 bg-slate-950/70 px-3 py-1 rounded-md backdrop-blur-xs border border-white/10">
+                  GlobeTrotter Journal
+                </span>
+                {tripData.status && (
+                  <span className="text-xs font-semibold capitalize px-2.5 py-0.5 rounded-full bg-emerald-500/90 text-white backdrop-blur-xs shadow-xs">
+                    ● {tripData.status}
+                  </span>
+                )}
+              </div>
+
+              <h1 className="font-display font-bold text-2xl sm:text-4xl text-white drop-shadow-md leading-snug">
                 {tripData.name || "Untitled Trip"}
               </h1>
-              <div className="flex flex-wrap items-center gap-4 text-xs font-sans mt-2 text-slate-200">
-                <span className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5 text-accent-300" /> {(tripData.destinations || []).join(', ') || 'Various places'}</span>
-                <span className="flex items-center gap-1"><Calendar className="w-3.5 h-3.5 text-accent-300" /> {tripData.startDate} → {tripData.endDate}</span>
-                <span className="flex items-center gap-1 font-semibold text-emerald-300"><DollarSign className="w-3.5 h-3.5" /> Total Est. ¥{totalCost.toLocaleString()}</span>
+
+              <div className="flex flex-wrap items-center gap-3 text-xs font-sans text-slate-200 pt-1">
+                <span className="flex items-center gap-1.5 font-medium bg-slate-950/50 px-3 py-1 rounded-md backdrop-blur-xs border border-white/10">
+                  <MapPin className="w-4 h-4 text-accent-300" />
+                  {(tripData.destinations || []).join(', ') || 'Destinations TBD'}
+                </span>
+                <span className="flex items-center gap-1.5 font-medium bg-slate-950/50 px-3 py-1 rounded-md backdrop-blur-xs border border-white/10">
+                  <Calendar className="w-4 h-4 text-accent-300" />
+                  {tripData.startDate || 'Start Date'} → {tripData.endDate || 'End Date'}
+                </span>
+                <span className="flex items-center gap-1.5 font-bold text-emerald-300 bg-slate-950/50 px-3 py-1 rounded-md backdrop-blur-xs border border-white/10">
+                  Est. Budget: ₹{displayTotalBudget.toLocaleString('en-IN')}
+                </span>
               </div>
             </div>
           </div>
 
-          {/* Description */}
+          {/* TRIP OVERVIEW / NOTES QUOTE */}
           {tripData.description && (
-            <div className="bg-surface-sunken p-4 rounded-md shadow-neo-pressed border border-accent-200/40 italic font-display text-ink-700 text-sm">
-              "{tripData.description}"
+            <div className="bg-slate-50 p-5 rounded-xl border border-slate-200 relative">
+              <span className="text-3xl text-accent-300 font-display absolute top-2 left-4 select-none">“</span>
+              <p className="font-display italic text-slate-700 text-sm sm:text-base pl-5 pr-2 leading-relaxed">
+                {tripData.description}
+              </p>
             </div>
           )}
 
-          {/* Stops Timeline */}
+          {/* BUDGET SUMMARY BAR */}
+          <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-xs space-y-3">
+            <div className="flex items-center justify-between text-xs sm:text-sm">
+              <span className="font-display font-semibold text-ink-900 flex items-center gap-1.5">
+                <DollarSign className="w-4 h-4 text-accent-400" /> Total Budget Utilization
+              </span>
+              <span className="font-bold tabular-nums text-slate-800">
+                ₹{totalPlannedActivitiesCost.toLocaleString('en-IN')} spent of ₹{displayTotalBudget.toLocaleString('en-IN')}
+              </span>
+            </div>
+            <div className="w-full h-3 rounded-full bg-slate-100 overflow-hidden border border-slate-200 p-0.5">
+              <div
+                className="h-full rounded-full bg-accent-400 transition-all duration-300"
+                style={{ width: `${Math.min(Math.round((totalPlannedActivitiesCost / displayTotalBudget) * 100), 100)}%` }}
+              />
+            </div>
+          </div>
+
+          {/* INTERACTIVE STOPS TIMELINE SECTION */}
           <div className="space-y-6">
-            <h2 className="font-display font-semibold text-xl text-ink-900 border-b border-ink-300/20 pb-2">
-              Trip Timeline & Stops
-            </h2>
+            <div className="flex items-center justify-between border-b border-slate-200 pb-3">
+              <h2 className="font-display font-semibold text-xl text-ink-900 flex items-center gap-2">
+                <Layers className="w-5 h-5 text-accent-400" /> Itinerary Timeline & Stops
+              </h2>
+              <span className="text-xs font-semibold text-slate-600 bg-slate-100 px-3 py-1 rounded-full border border-slate-200">
+                {stops.length} Stops Total
+              </span>
+            </div>
 
-            {tripData.stops && tripData.stops.length > 0 ? (
-              <div className="space-y-6 relative before:absolute before:left-4 before:top-3 before:bottom-3 before:w-0.5 before:bg-accent-300/40">
-                {tripData.stops.map((stop, idx) => (
-                  <div key={stop.id} className="relative pl-10">
-                    {/* Timeline Node Badge */}
-                    <div className="absolute left-1.5 top-1.5 w-6 h-6 rounded-full bg-accent-400 text-white font-bold text-xs flex items-center justify-center border-2 border-surface-raised shadow-sm">
-                      {idx + 1}
-                    </div>
+            {stops.length > 0 ? (
+              <div className="space-y-8 relative before:absolute before:left-5 before:top-4 before:bottom-4 before:w-0.5 before:bg-accent-200/80">
+                {stops.map((stop, idx) => {
+                  const stopActTotal = (stop.activities || []).reduce((a, b) => a + (Number(b.cost) || 0), 0);
+                  const stopBudget = Number(stop.budget) || 0;
+                  const isOver = stopBudget > 0 && stopActTotal > stopBudget;
 
-                    {/* Timeline Card */}
-                    <div className="bg-surface-raised border border-accent-200/70 rounded-lg p-5 shadow-neo-raised">
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <h3 className="font-display font-semibold text-lg text-ink-900">
-                            {stop.title || `Stop ${idx + 1}`}
-                          </h3>
-                          <p className="text-xs text-ink-500 mt-0.5">
-                            📅 {stop.dates || 'Dates TBD'}
-                          </p>
-                        </div>
-                        <span className="text-xs font-semibold text-ink-700 bg-surface-sunken px-2.5 py-1 rounded-md tabular-nums border border-accent-200/50">
-                          Budget: ¥{Number(stop.budget).toLocaleString()}
-                        </span>
+                  return (
+                    <div key={stop.id} className="relative pl-12 group">
+                      {/* Timeline Node Badge */}
+                      <div className="absolute left-2.5 top-1.5 -translate-x-1/2 w-7 h-7 rounded-full bg-accent-400 text-white font-bold text-xs flex items-center justify-center border-2 border-white shadow-sm ring-2 ring-accent-400/20">
+                        {idx + 1}
                       </div>
 
-                      {stop.notes && (
-                        <p className="text-xs text-ink-700 font-sans mt-3 bg-surface-sunken/50 p-2.5 rounded border border-ink-300/10">
-                          {stop.notes}
-                        </p>
-                      )}
+                      {/* Timeline Card Container */}
+                      <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-all space-y-4">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+                          <div>
+                            <h3 className="font-display font-semibold text-lg sm:text-xl text-ink-900">
+                              {stop.title || `Stop ${idx + 1}`}
+                            </h3>
+                            <p className="text-xs text-slate-500 font-medium mt-0.5 flex items-center gap-1.5">
+                              <Calendar className="w-3.5 h-3.5 text-accent-400" />
+                              {stop.dates || 'Dates TBD'}
+                            </p>
+                          </div>
 
-                      {/* Activities */}
-                      {stop.activities && stop.activities.length > 0 && (
-                        <div className="mt-4 pt-3 border-t border-ink-300/20 space-y-2">
-                          <span className="text-[11px] font-semibold uppercase text-ink-500">Scheduled Activities</span>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                            {stop.activities.map((act) => (
-                              <div key={act.id} className="flex items-center justify-between text-xs bg-surface-sunken px-3 py-2 rounded-md">
-                                <span className="text-ink-900 font-medium flex items-center gap-1.5">
-                                  <CheckCircle2 className="w-3.5 h-3.5 text-semantic-success shrink-0" />
-                                  {act.name}
-                                </span>
-                                <span className="font-semibold text-ink-700 tabular-nums">
-                                  ¥{Number(act.cost).toLocaleString()}
-                                </span>
-                              </div>
-                            ))}
+                          <div className="self-start sm:self-auto">
+                            <span className={`text-xs font-bold px-3 py-1 rounded-md tabular-nums border ${
+                              isOver ? 'bg-red-50 text-semantic-danger border-red-200' : 'bg-slate-100 text-slate-700 border-slate-200'
+                            }`}>
+                              Budget: ₹{stopBudget.toLocaleString('en-IN')}
+                            </span>
                           </div>
                         </div>
-                      )}
+
+                        {/* Notes */}
+                        {stop.notes && (
+                          <div className="bg-slate-50/80 p-3 rounded-lg border border-slate-100 text-xs text-slate-700 leading-relaxed font-sans">
+                            <span className="font-semibold text-slate-900 block mb-0.5">Notes:</span>
+                            {stop.notes}
+                          </div>
+                        )}
+
+                        {/* Activities Grid */}
+                        {stop.activities && stop.activities.length > 0 && (
+                          <div className="pt-2 space-y-2">
+                            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 block">
+                              Scheduled Activities ({stop.activities.length})
+                            </span>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                              {stop.activities.map((act) => (
+                                <div
+                                  key={act.id}
+                                  className="flex items-center justify-between text-xs bg-slate-50 hover:bg-slate-100/80 px-3.5 py-2.5 rounded-lg border border-slate-200 transition-colors"
+                                >
+                                  <span className="text-ink-900 font-medium flex items-center gap-2">
+                                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                                    {act.name}
+                                  </span>
+                                  <span className="font-bold text-slate-800 tabular-nums">
+                                    ₹{Number(act.cost).toLocaleString('en-IN')}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             ) : (
-              <p className="text-center text-ink-500 py-6">No stops created yet.</p>
+              <div className="text-center py-10 text-slate-500 bg-slate-50 rounded-xl border border-slate-200 text-sm">
+                No stops added to this itinerary yet.
+              </div>
             )}
           </div>
+
         </div>
 
-        {/* Modal Footer */}
-        <div className="sticky bottom-0 bg-surface-raised px-6 py-4 border-t border-ink-300/20 flex items-center justify-between">
-          <span className="text-xs text-ink-500">Ready to travel? Save and export your itinerary.</span>
-          <Button variant="primary" onClick={onClose}>
-            Close Preview
+        {/* Sticky Footer Bar */}
+        <div className="sticky bottom-0 bg-white/95 backdrop-blur-md px-6 py-4 border-t border-slate-100 flex items-center justify-between z-30 shadow-lg">
+          <span className="text-xs text-slate-500 font-medium hidden sm:inline">
+            Export or view your itinerary journal anytime.
+          </span>
+          <Button variant="primary" onClick={onClose} className="ml-auto cursor-pointer">
+            Close Journal
           </Button>
         </div>
+
       </div>
+
+      {/* FULLSCREEN PHOTO ZOOM LIGHTBOX MODAL */}
+      {isPhotoZoomed && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-md animate-fade-in-up">
+          <button
+            onClick={() => setIsPhotoZoomed(false)}
+            className="absolute top-4 right-4 p-2.5 text-white bg-slate-800/80 hover:bg-slate-700 rounded-full border border-white/20 cursor-pointer z-50"
+            title="Close Lightbox"
+          >
+            <X className="w-6 h-6" />
+          </button>
+          <div className="max-w-5xl w-full max-h-[85vh] rounded-2xl overflow-hidden shadow-2xl border border-white/20 relative">
+            <img
+              src={coverPhoto}
+              alt={tripData.name}
+              className="w-full h-full object-contain max-h-[85vh] mx-auto"
+            />
+            <div className="absolute bottom-4 left-4 bg-slate-900/80 backdrop-blur-md text-white text-xs font-semibold px-4 py-2 rounded-lg border border-white/10">
+              {tripData.name}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

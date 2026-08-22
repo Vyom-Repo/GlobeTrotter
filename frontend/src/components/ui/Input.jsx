@@ -1,7 +1,7 @@
 import React from 'react';
 
 export const Label = ({ children, required = false, className = '' }) => (
-  <label className={`block text-[12px] font-semibold uppercase tracking-[0.06em] text-ink-500 mb-1.5 ${className}`}>
+  <label className={`block text-xs font-semibold uppercase tracking-wider text-ink-700 mb-1.5 ${className}`}>
     {children} {required && <span className="text-semantic-danger font-bold">*</span>}
   </label>
 );
@@ -18,25 +18,25 @@ export const Input = React.forwardRef(({
   ...props
 }, ref) => {
   const placeholderStyle = placeholderFont === 'display'
-    ? 'placeholder:font-display placeholder:italic placeholder:text-ink-500/70 font-sans'
-    : 'placeholder:font-sans placeholder:text-ink-500/70 font-sans';
+    ? 'placeholder:font-display placeholder:italic placeholder:text-slate-400 font-sans'
+    : 'placeholder:font-sans placeholder:text-slate-400 font-sans';
 
   return (
     <div className={`w-full ${containerClassName}`}>
       {label && <Label required={required}>{label}</Label>}
       <div className="relative flex items-center w-full">
         {Icon && (
-          <div className="absolute left-3.5 text-ink-500 pointer-events-none flex items-center justify-center">
-            <Icon className="w-4 h-4" />
+          <div className="absolute left-3.5 text-slate-400 pointer-events-none flex items-center justify-center">
+            <Icon className="w-4 h-4 text-accent-400" />
           </div>
         )}
         <input
           ref={ref}
           className={`
-            w-full bg-surface-sunken text-ink-900 text-[15px] leading-relaxed rounded-md px-4 py-2.5 min-h-[44px]
-            shadow-neo-pressed border transition-all duration-150 outline-none
+            w-full bg-white text-ink-900 text-sm leading-relaxed rounded-md px-3.5 py-2.5 min-h-[42px]
+            border border-slate-300 shadow-sm transition-all duration-150 outline-none
             ${Icon ? 'pl-10' : ''}
-            ${error ? 'border-semantic-danger ring-1 ring-semantic-danger' : 'border-accent-200/50 hover:border-accent-300 focus:border-accent-400 focus:ring-2 focus:ring-accent-400/30'}
+            ${error ? 'border-semantic-danger ring-1 ring-semantic-danger' : 'hover:border-slate-400 focus:border-accent-400 focus:ring-2 focus:ring-accent-400/20'}
             ${placeholderStyle}
             ${className}
           `}
@@ -73,10 +73,10 @@ export const Textarea = React.forwardRef(({
         ref={ref}
         rows={rows}
         className={`
-          w-full bg-surface-sunken text-ink-900 text-[15px] leading-relaxed rounded-md px-4 py-3
-          shadow-neo-pressed border transition-all duration-150 outline-none resize-y
-          placeholder:font-sans placeholder:text-ink-500/70 font-sans
-          ${error ? 'border-semantic-danger ring-1 ring-semantic-danger' : 'border-accent-200/50 hover:border-accent-300 focus:border-accent-400 focus:ring-2 focus:ring-accent-400/30'}
+          w-full bg-white text-ink-900 text-sm leading-relaxed rounded-md px-3.5 py-2.5
+          border border-slate-300 shadow-sm transition-all duration-150 outline-none resize-y
+          placeholder:font-sans placeholder:text-slate-400 font-sans
+          ${error ? 'border-semantic-danger ring-1 ring-semantic-danger' : 'hover:border-slate-400 focus:border-accent-400 focus:ring-2 focus:ring-accent-400/20'}
           ${className}
         `}
         {...props}

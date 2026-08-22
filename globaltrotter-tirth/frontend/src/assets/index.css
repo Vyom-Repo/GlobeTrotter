@@ -1,0 +1,49 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root, [data-theme="light-blue"] {
+  --palette-accent-50: #e8f4ff;
+  --palette-accent-100: #c0deff;
+  --palette-accent-200: #8ac2ff;
+  --palette-accent-300: #55a6ff;
+  --palette-accent-400: #2090ff;
+  --palette-accent-500: #0073e6;
+  --palette-accent-600: #005bcc;
+  --palette-accent-700: #0044a3;
+  --palette-accent-800: #002e7a;
+  --palette-accent-900: #001852;
+  --palette-name: "light-blue";
+}
+
+@layer base {
+  body {
+    @apply bg-accent-50 text-slate-900 font-serif antialiased selection:bg-accent-200 selection:text-accent-900;
+    font-family: 'Lora', Georgia, serif;
+    font-weight: 400;
+  }
+}
+
+/* Premium 850ms smooth easing for auth slider */
+.auth-panel-transition {
+  transition-property: transform, left, right, border-radius;
+  transition-duration: 850ms;
+  transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.auth-content-fade {
+  transition-property: opacity, transform;
+  transition-duration: 600ms;
+  transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Respect user reduced-motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .auth-panel-transition,
+  .auth-content-fade,
+  .transition-all,
+  .transition-transform {
+    transition-duration: 1ms !important;
+    animation-duration: 1ms !important;
+  }
+}

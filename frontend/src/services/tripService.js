@@ -8,6 +8,10 @@ export const tripService = {
     });
   },
 
+  async getUserTrips(page = 1, pageSize = 20) {
+    return await this.getTrips(page, pageSize);
+  },
+
   async getTrip(tripId) {
     return await apiRequest(`/api/v1/trips/${tripId}`, {
       method: 'GET',

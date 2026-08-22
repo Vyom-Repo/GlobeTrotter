@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { X, Sliders, DollarSign, Bell, Shield, Moon, Check } from 'lucide-react';
+import { X, Sliders, Check } from 'lucide-react';
 import { Button } from './Button';
 
 export const SettingsModal = ({ isOpen, onClose }) => {
-  const [currency, setCurrency] = useState('JPY');
+  const [currency, setCurrency] = useState('INR');
   const [autosaveInterval, setAutosaveInterval] = useState('800ms');
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [budgetAlerts, setBudgetAlerts] = useState(true);
@@ -12,9 +12,13 @@ export const SettingsModal = ({ isOpen, onClose }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div onClick={onClose} className="fixed inset-0 bg-ink-900/40 backdrop-blur-xs animate-fade-in-up" />
+      {/* Blurred Backdrop Overlay */}
+      <div
+        onClick={onClose}
+        className="fixed inset-0 bg-slate-900/60 backdrop-blur-md transition-opacity animate-fade-in-up z-40"
+      />
 
-      <div className="relative bg-surface-raised border border-accent-200 shadow-neo-floating rounded-xl max-w-md w-full p-6 z-10 animate-fade-in-up">
+      <div className="relative bg-surface-raised border border-accent-200 shadow-neo-floating rounded-xl max-w-md w-full p-6 z-50 animate-fade-in-up">
         <div className="flex items-center justify-between border-b border-ink-300/20 pb-3 mb-4">
           <div className="flex items-center gap-2">
             <Sliders className="w-5 h-5 text-accent-400" />
@@ -24,7 +28,7 @@ export const SettingsModal = ({ isOpen, onClose }) => {
           </div>
           <button
             onClick={onClose}
-            className="p-1 rounded-full text-ink-500 hover:text-ink-900 hover:bg-surface-sunken"
+            className="p-1 rounded-full text-ink-500 hover:text-ink-900 hover:bg-surface-sunken cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
@@ -38,7 +42,7 @@ export const SettingsModal = ({ isOpen, onClose }) => {
             </label>
             <div className="grid grid-cols-3 gap-2">
               {[
-                { code: 'JPY', symbol: '¥ JPY (Yen)' },
+                { code: 'INR', symbol: '₹ INR (Rupees)' },
                 { code: 'USD', symbol: '$ USD (Dollar)' },
                 { code: 'EUR', symbol: '€ EUR (Euro)' }
               ].map((c) => (
@@ -47,7 +51,7 @@ export const SettingsModal = ({ isOpen, onClose }) => {
                   type="button"
                   onClick={() => setCurrency(c.code)}
                   className={`
-                    px-3 py-2 rounded-md border text-xs font-semibold transition-all text-center
+                    px-3 py-2 rounded-md border text-xs font-semibold transition-all text-center cursor-pointer
                     ${currency === c.code
                       ? 'bg-accent-100 text-accent-800 border-accent-400 shadow-xs'
                       : 'bg-surface-sunken text-ink-700 border-accent-200/50 hover:bg-accent-50'}
@@ -106,7 +110,7 @@ export const SettingsModal = ({ isOpen, onClose }) => {
         </div>
 
         <div className="mt-6 pt-3 border-t border-ink-300/20 flex justify-end">
-          <Button variant="primary" size="sm" onClick={onClose} icon={Check}>
+          <Button variant="primary" size="sm" onClick={onClose} icon={Check} className="cursor-pointer">
             Save Preferences
           </Button>
         </div>
