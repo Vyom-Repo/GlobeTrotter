@@ -1,15 +1,16 @@
 import React from 'react';
-import Navbar from './components/Navbar';
-import Dashboard from './pages/Dashboard';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import AuthContainer from './components/AuthContainer';
 
 function App() {
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col">
-      <Navbar />
-      <main className="flex-1 max-w-7xl w-full mx-auto p-4">
-        <Dashboard />
-      </main>
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/login" element={<AuthContainer />} />
+        <Route path="/register" element={<AuthContainer />} />
+        <Route path="*" element={<Navigate to="/login" replace />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 
