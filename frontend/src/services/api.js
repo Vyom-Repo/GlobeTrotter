@@ -1,10 +1,10 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
 
 /**
  * Centralized API client for GlobeTrotter backend calls.
  */
 export async function apiRequest(endpoint, options = {}) {
-  const url = `${API_BASE_URL}${endpoint}`;
+  const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint}`;
 
   const token = localStorage.getItem('token');
   const headers = {
@@ -32,7 +32,7 @@ export async function apiRequest(endpoint, options = {}) {
       throw errorObj;
     }
 
-    return data?.data !== undefined ? data.data : data;
+    return data !== null ? data : {};
   } catch (err) {
     if (!err.status) {
       err.message = 'Unable to connect to GlobeTrotter backend service. Please check your connection.';
@@ -41,3 +41,5 @@ export async function apiRequest(endpoint, options = {}) {
     throw err;
   }
 }
+
+export default apiRequest;

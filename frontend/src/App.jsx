@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import Landing from './pages/Landing';
 import AuthContainer from './components/AuthContainer';
 import Dashboard from './pages/Dashboard';
 import TripDetails from './pages/TripDetails';
@@ -7,6 +8,8 @@ import ItineraryBuilder from './pages/ItineraryBuilder';
 import TripBudget from './pages/TripBudget';
 import PublicTrips from './pages/PublicTrips';
 import PublicTripDetails from './pages/PublicTripDetails';
+import SavedDestinations from './pages/SavedDestinations';
+import Screen07_UserProfile from './components/Screen07_UserProfile';
 import authService from './services/authService';
 
 function ProtectedRoute({ children }) {
@@ -20,16 +23,19 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Auth routes */}
+        {/* Landing Page */}
+        <Route path="/" element={<Landing />} />
+
+        {/* Public Auth routes */}
         <Route path="/login" element={<AuthContainer initialMode="login" />} />
         <Route path="/register" element={<AuthContainer initialMode="register" />} />
 
-        {/* Public routes (No auth required) */}
+        {/* Public Discovery routes */}
         <Route path="/explore" element={<PublicTrips />} />
         <Route path="/public-trips/:tripId" element={<PublicTripDetails />} />
         <Route path="/shared/:token" element={<PublicTripDetails />} />
 
-        {/* Protected routes */}
+        {/* Protected User Application Flow */}
         <Route
           path="/dashboard"
           element={
@@ -70,6 +76,22 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/saved-destinations"
+          element={
+            <ProtectedRoute>
+              <SavedDestinations />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <Screen07_UserProfile />
+            </ProtectedRoute>
+          }
+        />
 
         {/* Fallback route */}
         <Route
@@ -78,7 +100,7 @@ function App() {
             authService.isAuthenticated() ? (
               <Navigate to="/dashboard" replace />
             ) : (
-              <Navigate to="/explore" replace />
+              <Navigate to="/" replace />
             )
           }
         />

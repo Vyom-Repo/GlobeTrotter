@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import authService from '../services/authService';
-import { Compass, LogOut, PlusCircle, MapPin, User as UserIcon } from 'lucide-react';
+import { Compass, LogOut, PlusCircle, Bookmark, User as UserIcon } from 'lucide-react';
 
 export default function Navbar({ onCreateTripClick }) {
   const navigate = useNavigate();
@@ -29,6 +29,10 @@ export default function Navbar({ onCreateTripClick }) {
           <Link to="/explore" className="px-3 py-2 text-sm font-medium text-slate-700 hover:text-blue-600 rounded-lg hover:bg-slate-100 transition">
             Explore Trips
           </Link>
+          <Link to="/saved-destinations" className="px-3 py-2 text-sm font-medium text-slate-700 hover:text-blue-600 rounded-lg hover:bg-slate-100 transition flex items-center space-x-1">
+            <Bookmark className="w-3.5 h-3.5 text-blue-600" />
+            <span>Saved Items</span>
+          </Link>
         </div>
       </div>
 
@@ -45,10 +49,14 @@ export default function Navbar({ onCreateTripClick }) {
 
         {user && (
           <div className="flex items-center space-x-3 pl-3 border-l border-slate-200">
-            <div className="flex items-center space-x-2 bg-slate-100 px-3 py-1.5 rounded-full text-xs font-semibold text-slate-700">
+            <Link
+              to="/profile"
+              className="flex items-center space-x-2 bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-full text-xs font-semibold text-slate-700 transition"
+              title="User Profile & Settings"
+            >
               <UserIcon className="w-3.5 h-3.5 text-slate-500" />
               <span>{user.name}</span>
-            </div>
+            </Link>
             <button
               onClick={handleLogout}
               title="Logout"
