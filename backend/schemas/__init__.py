@@ -2,7 +2,10 @@ from backend.schemas.common import SuccessResponse, ErrorResponse, PaginatedResp
 from backend.schemas.country import CountryBase, CountryResponse
 from backend.schemas.city import CityBase, CityResponse
 from backend.schemas.activity import ActivityBase, ActivityResponse
-from backend.schemas.user import UserBase, UserCreate, UserUpdate, UserResponse
+from backend.schemas.user import (
+    UserBase, UserCreate, UserUpdate, UserResponse,
+    PasswordChangeRequest, UserPreferenceUpdate, UserPreferenceResponse
+)
 from backend.schemas.auth import LoginRequest, TokenResponse, TokenPayload
 from backend.schemas.trip import TripBase, TripCreate, TripUpdate, TripResponse
 from backend.schemas.trip_stop import TripStopBase, TripStopCreate, TripStopResponse
@@ -28,6 +31,9 @@ __all__ = [
     "UserCreate",
     "UserUpdate",
     "UserResponse",
+    "PasswordChangeRequest",
+    "UserPreferenceUpdate",
+    "UserPreferenceResponse",
     "LoginRequest",
     "TokenResponse",
     "TokenPayload",
