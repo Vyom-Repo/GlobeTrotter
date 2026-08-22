@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import tripService from '../services/tripService';
-import { Search, MapPin, Calendar, Plus, Trash2, ArrowRight, ArrowLeft, Loader2, AlertCircle, MoveUp, MoveDown, Check, Globe, Lock } from 'lucide-react';
+import sharingService from '../services/sharingService';
+import { Search, MapPin, Calendar, Plus, Trash2, ArrowRight, ArrowLeft, Loader2, AlertCircle, MoveUp, MoveDown, Check, Globe, Lock, Share2, Copy } from 'lucide-react';
 
 export default function TripDetails() {
   const { tripId } = useParams();
@@ -17,6 +18,11 @@ export default function TripDetails() {
   const [budgetLimit, setBudgetLimit] = useState('');
   const [currency, setCurrency] = useState('USD');
   const [visibility, setVisibility] = useState('private');
+
+  // Shares state
+  const [shares, setShares] = useState([]);
+  const [generatingShare, setGeneratingShare] = useState(false);
+  const [copiedToken, setCopiedToken] = useState('');
 
   // Active saved trip data & stops
   const [savedTrip, setSavedTrip] = useState(null);
@@ -62,11 +68,55 @@ export default function TripDetails() {
       } else {
         fetchStops();
       }
+      await fetchShares();
     } catch (err) {
       setError(err.message || 'Failed to load trip details');
     } finally {
       setLoading(false);
     }
+  };
+
+  const fetchShares = async () => {
+    try {
+      const res = await sharingService.getTripShares(tripId);
+      if (res && res.data) {
+        setShares(res.data);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleCreateShare = async () => {
+    try {
+      setGeneratingShare(true);
+      setError('');
+      await sharingService.createShare(tripId, 'view');
+      setSuccessMsg('Share token generated successfully!');
+      await fetchShares();
+    } catch (err) {
+      setError(err.message || 'Failed to generate share token');
+    } finally {
+      setGeneratingShare(false);
+    }
+  };
+
+  const handleRevokeShare = async (shareId) => {
+    try {
+      setError('');
+      await sharingService.revokeShare(shareId);
+      setSuccessMsg('Share token revoked successfully');
+      await fetchShares();
+    } catch (err) {
+      setError(err.message || 'Failed to revoke share token');
+    }
+  };
+
+  const handleCopyLink = (tokenStr) => {
+    const link = `${window.location.origin}/shared/${tokenStr}`;
+    navigator.clipboard.writeText(link);
+    setCopiedToken(tokenStr);
+    setTimeout(() => setCopiedToken(''), 2000);
   };
 
   const fetchStops = async () => {
@@ -368,6 +418,56 @@ export default function TripDetails() {
                 <span>{isNew ? 'Create & Continue' : 'Save Settings'}</span>
               </button>
             </form>
+
+            {/* Share Token Section */}
+            {!isNew && (
+              <div className="mt-6 border-t border-slate-100 pt-6">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-sm font-bold text-slate-900 flex items-center space-x-1.5">
+                    <Share2 className="w-4 h-4 text-blue-600" />
+                    <span>Shareable Public Links</span>
+                  </h3>
+                  <button
+                    onClick={handleCreateShare}
+                    disabled={generatingShare}
+                    className="text-xs bg-blue-50 hover:bg-blue-100 text-blue-700 font-semibold px-2.5 py-1.5 rounded-lg border border-blue-200 transition flex items-center space-x-1"
+                  >
+                    {generatingShare ? <Loader2 className="w-3 h-3 animate-spin" /> : <Plus className="w-3 h-3" />}
+                    <span>Generate Link</span>
+                  </button>
+                </div>
+
+                {shares.length === 0 ? (
+                  <p className="text-xs text-slate-400 italic">No share links generated yet.</p>
+                ) : (
+                  <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+                    {shares.map((s) => (
+                      <div key={s.id} className="p-2.5 rounded-xl border border-slate-100 bg-slate-50 flex items-center justify-between text-xs">
+                        <span className="font-mono text-[11px] text-slate-600 truncate max-w-[140px]">
+                          ...{s.share_token.slice(-12)}
+                        </span>
+                        <div className="flex items-center space-x-1">
+                          <button
+                            onClick={() => handleCopyLink(s.share_token)}
+                            className="p-1 text-slate-500 hover:text-blue-600 rounded hover:bg-white transition"
+                            title="Copy Link"
+                          >
+                            {copiedToken === s.share_token ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                          </button>
+                          <button
+                            onClick={() => handleRevokeShare(s.id)}
+                            className="p-1 text-slate-400 hover:text-red-600 rounded hover:bg-white transition"
+                            title="Revoke Share"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Right Column: Destination Stop Management */}

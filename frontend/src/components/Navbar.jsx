@@ -26,8 +26,8 @@ export default function Navbar({ onCreateTripClick }) {
           <Link to="/dashboard" className="px-3 py-2 text-sm font-medium text-slate-700 hover:text-blue-600 rounded-lg hover:bg-slate-100 transition">
             My Trips
           </Link>
-          <Link to="/cities" className="px-3 py-2 text-sm font-medium text-slate-700 hover:text-blue-600 rounded-lg hover:bg-slate-100 transition">
-            Explore Cities
+          <Link to="/explore" className="px-3 py-2 text-sm font-medium text-slate-700 hover:text-blue-600 rounded-lg hover:bg-slate-100 transition">
+            Explore Trips
           </Link>
         </div>
       </div>

@@ -5,6 +5,8 @@ import Dashboard from './pages/Dashboard';
 import TripDetails from './pages/TripDetails';
 import ItineraryBuilder from './pages/ItineraryBuilder';
 import TripBudget from './pages/TripBudget';
+import PublicTrips from './pages/PublicTrips';
+import PublicTripDetails from './pages/PublicTripDetails';
 import authService from './services/authService';
 
 function ProtectedRoute({ children }) {
@@ -18,9 +20,16 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
+        {/* Auth routes */}
         <Route path="/login" element={<AuthContainer initialMode="login" />} />
         <Route path="/register" element={<AuthContainer initialMode="register" />} />
 
+        {/* Public routes (No auth required) */}
+        <Route path="/explore" element={<PublicTrips />} />
+        <Route path="/public-trips/:tripId" element={<PublicTripDetails />} />
+        <Route path="/shared/:token" element={<PublicTripDetails />} />
+
+        {/* Protected routes */}
         <Route
           path="/dashboard"
           element={
@@ -62,13 +71,14 @@ function App() {
           }
         />
 
+        {/* Fallback route */}
         <Route
           path="*"
           element={
             authService.isAuthenticated() ? (
               <Navigate to="/dashboard" replace />
             ) : (
-              <Navigate to="/login" replace />
+              <Navigate to="/explore" replace />
             )
           }
         />
