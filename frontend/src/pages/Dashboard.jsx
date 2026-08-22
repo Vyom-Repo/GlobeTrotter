@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import tripService from '../services/tripService';
-import { MapPin, Calendar, Plus, Trash2, Edit3, ArrowRight, Compass, DollarSign, Globe, Lock, AlertCircle, Loader2 } from 'lucide-react';
+import { MapPin, Calendar, Plus, Trash2, Edit3, ArrowRight, Compass, DollarSign, Globe, Lock, AlertCircle, Loader2, Search, Filter, ArrowUpDown } from 'lucide-react';
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -12,6 +12,11 @@ export default function Dashboard() {
   const [page, setPage] = useState(1);
   const [pagination, setPagination] = useState({ total: 0, total_pages: 1 });
 
+  // Neel's MyTrips filter/search/sort state
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeStatusTab, setActiveStatusTab] = useState('All'); // 'All' | 'Ongoing' | 'Upcoming' | 'Completed'
+  const [sortBy, setSortBy] = useState('date'); // 'date' | 'budget' | 'name'
+
   // Delete modal state
   const [deleteTripId, setDeleteTripId] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -20,7 +25,7 @@ export default function Dashboard() {
     try {
       setLoading(true);
       setError('');
-      const response = await tripService.getTrips(currentPage, 9);
+      const response = await tripService.getTrips(currentPage, 20);
       if (response && response.data) {
         setTrips(response.data);
         if (response.pagination) {
@@ -54,15 +59,37 @@ export default function Dashboard() {
     }
   };
 
+  // Filter & Sort trips based on search query, status tab, and sort selection
+  const filteredAndSortedTrips = useMemo(() => {
+    return trips
+      .filter((trip) => {
+        const query = searchQuery.toLowerCase();
+        const matchesSearch =
+          !query ||
+          (trip.name && trip.name.toLowerCase().includes(query)) ||
+          (trip.description && trip.description.toLowerCase().includes(query)) ||
+          (trip.destinations && trip.destinations.some(d => d.toLowerCase().includes(query)));
+
+        if (!matchesSearch) return false;
+        if (activeStatusTab === 'All') return true;
+        return (trip.status || 'upcoming').toLowerCase() === activeStatusTab.toLowerCase();
+      })
+      .sort((a, b) => {
+        if (sortBy === 'name') return (a.name || '').localeCompare(b.name || '');
+        if (sortBy === 'budget') return (parseFloat(b.budget_limit || 0) - parseFloat(a.budget_limit || 0));
+        return new Date(a.start_date || a.created_at || 0) - new Date(b.start_date || b.created_at || 0);
+      });
+  }, [trips, searchQuery, activeStatusTab, sortBy]);
+
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans pb-16">
+    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans pb-16 selection:bg-blue-500 selection:text-white">
       <Navbar onCreateTripClick={() => navigate('/trips/new')} />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
         {/* Banner Section */}
         <div className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-3xl p-8 text-white shadow-xl mb-8 relative overflow-hidden">
           <div className="relative z-10 max-w-2xl">
-            <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl mb-3">
+            <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl mb-3 font-serif">
               Where to next? ✈️
             </h1>
             <p className="text-blue-100 text-base sm:text-lg mb-6 leading-relaxed">
@@ -70,7 +97,7 @@ export default function Dashboard() {
             </p>
             <button
               onClick={() => navigate('/trips/new')}
-              className="inline-flex items-center space-x-2 bg-white text-blue-700 hover:bg-blue-50 font-semibold px-5 py-3 rounded-2xl transition shadow-lg hover:shadow-xl"
+              className="inline-flex items-center space-x-2 bg-white text-blue-700 hover:bg-blue-50 font-semibold px-5 py-3 rounded-2xl transition shadow-lg hover:shadow-xl cursor-pointer"
             >
               <Plus className="w-5 h-5" />
               <span>Create New Journey</span>
@@ -81,11 +108,61 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Section Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h2 className="text-2xl font-bold text-slate-900">My Travel Journeys</h2>
-            <p className="text-slate-500 text-sm mt-1">Manage your planned itineraries and travel destinations</p>
+        {/* Section Header & Filters */}
+        <div className="space-y-4 mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h2 className="text-2xl font-bold text-slate-900 font-serif">My Travel Journeys</h2>
+              <p className="text-slate-500 text-sm mt-1">Manage your planned itineraries and travel destinations</p>
+            </div>
+
+            {/* Sort Dropdown */}
+            <div className="flex items-center space-x-2">
+              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider flex items-center gap-1">
+                <ArrowUpDown className="w-3.5 h-3.5" /> Sort:
+              </span>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="bg-white text-slate-700 text-xs font-semibold px-3 py-2 rounded-xl border border-slate-200 shadow-xs outline-none cursor-pointer hover:border-slate-300"
+              >
+                <option value="date font-serif">Start Date</option>
+                <option value="name">Trip Name</option>
+                <option value="budget">Budget Limit</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Search & Status Tabs Bar */}
+          <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 bg-white p-3 rounded-2xl border border-slate-200 shadow-xs">
+            {/* Status Tabs */}
+            <div className="flex items-center space-x-1 overflow-x-auto pb-1 md:pb-0">
+              {['All', 'Ongoing', 'Upcoming', 'Completed'].map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => setActiveStatusTab(tab)}
+                  className={`px-4 py-2 rounded-xl text-xs font-semibold transition whitespace-nowrap cursor-pointer ${
+                    activeStatusTab === tab
+                      ? 'bg-blue-600 text-white shadow-sm'
+                      : 'text-slate-600 hover:bg-slate-100'
+                  }`}
+                >
+                  {tab}
+                </button>
+              ))}
+            </div>
+
+            {/* Search Input */}
+            <div className="relative min-w-[240px]">
+              <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 transform -translate-y-1/2" />
+              <input
+                type="text"
+                placeholder="Search trips or destinations..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full bg-slate-50 text-slate-900 text-xs pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 outline-none focus:border-blue-500 transition"
+              />
+            </div>
           </div>
         </div>
 
@@ -110,19 +187,25 @@ export default function Dashboard() {
               </div>
             ))}
           </div>
-        ) : trips.length === 0 ? (
+        ) : filteredAndSortedTrips.length === 0 ? (
           /* Empty State */
           <div className="bg-white rounded-3xl p-12 border border-slate-200 border-dashed text-center max-w-lg mx-auto my-8">
             <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
               <MapPin className="w-8 h-8" />
             </div>
-            <h3 className="text-lg font-bold text-slate-900 mb-2">No trips created yet</h3>
+            <h3 className="text-lg font-bold text-slate-900 mb-2 font-serif">No trips found</h3>
             <p className="text-slate-500 text-sm mb-6">
-              Start building your first offline trip by selecting destination cities and scheduling activities.
+              {searchQuery || activeStatusTab !== 'All'
+                ? 'Try adjusting your search query or status filter tab.'
+                : 'Start building your first offline trip by selecting destination cities and scheduling activities.'}
             </p>
             <button
-              onClick={() => navigate('/trips/new')}
-              className="bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm px-5 py-2.5 rounded-xl transition shadow"
+              onClick={() => {
+                setSearchQuery('');
+                setActiveStatusTab('All');
+                navigate('/trips/new');
+              }}
+              className="bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm px-5 py-2.5 rounded-xl transition shadow cursor-pointer"
             >
               Start Planning
             </button>
@@ -130,32 +213,39 @@ export default function Dashboard() {
         ) : (
           /* Trip Cards Grid */
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {trips.map((trip) => (
+            {filteredAndSortedTrips.map((trip) => (
               <div
                 key={trip.id}
                 className="bg-white rounded-3xl border border-slate-200 shadow-sm hover:shadow-md transition duration-200 flex flex-col justify-between overflow-hidden group"
               >
                 <div className="p-6">
-                  {/* Visibility badge */}
+                  {/* Visibility & Status Badges */}
                   <div className="flex items-center justify-between mb-3">
-                    <span className={`inline-flex items-center space-x-1 px-2.5 py-1 rounded-full text-xs font-semibold ${
-                      trip.visibility === 'public'
-                        ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                        : 'bg-slate-100 text-slate-600'
-                    }`}>
-                      {trip.visibility === 'public' ? <Globe className="w-3 h-3" /> : <Lock className="w-3 h-3" />}
-                      <span className="capitalize">{trip.visibility}</span>
-                    </span>
+                    <div className="flex items-center space-x-2">
+                      <span className={`inline-flex items-center space-x-1 px-2.5 py-1 rounded-full text-xs font-semibold ${
+                        trip.visibility === 'public'
+                          ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                          : 'bg-slate-100 text-slate-600'
+                      }`}>
+                        {trip.visibility === 'public' ? <Globe className="w-3 h-3" /> : <Lock className="w-3 h-3" />}
+                        <span className="capitalize">{trip.visibility}</span>
+                      </span>
+                      {trip.status && (
+                        <span className="capitalize text-[11px] font-semibold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-200">
+                          {trip.status}
+                        </span>
+                      )}
+                    </div>
                     <button
                       onClick={() => setDeleteTripId(trip.id)}
-                      className="text-slate-400 hover:text-red-600 p-1.5 rounded-lg hover:bg-red-50 transition"
+                      className="text-slate-400 hover:text-red-600 p-1.5 rounded-lg hover:bg-red-50 transition cursor-pointer"
                       title="Delete Trip"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
 
-                  <h3 className="text-xl font-bold text-slate-900 mb-2 group-hover:text-blue-600 transition">
+                  <h3 className="text-xl font-bold text-slate-900 mb-2 group-hover:text-blue-600 transition font-serif">
                     {trip.name}
                   </h3>
 
@@ -183,14 +273,14 @@ export default function Dashboard() {
                   <div className="flex items-center space-x-3">
                     <button
                       onClick={() => navigate(`/trips/${trip.id}`)}
-                      className="text-xs font-semibold text-slate-700 hover:text-blue-600 transition flex items-center space-x-1"
+                      className="text-xs font-semibold text-slate-700 hover:text-blue-600 transition flex items-center space-x-1 cursor-pointer"
                     >
                       <Edit3 className="w-3.5 h-3.5" />
                       <span>Destinations</span>
                     </button>
                     <button
                       onClick={() => navigate(`/trips/${trip.id}/budget`)}
-                      className="text-xs font-semibold text-emerald-700 hover:text-emerald-800 transition flex items-center space-x-1"
+                      className="text-xs font-semibold text-emerald-700 hover:text-emerald-800 transition flex items-center space-x-1 cursor-pointer"
                     >
                       <DollarSign className="w-3.5 h-3.5" />
                       <span>Budget</span>
@@ -199,7 +289,7 @@ export default function Dashboard() {
 
                   <button
                     onClick={() => navigate(`/trips/${trip.id}/itinerary`)}
-                    className="inline-flex items-center space-x-1.5 bg-blue-600 hover:bg-blue-700 text-white font-medium text-xs px-3.5 py-2 rounded-xl transition shadow-sm"
+                    className="inline-flex items-center space-x-1.5 bg-blue-600 hover:bg-blue-700 text-white font-medium text-xs px-3.5 py-2 rounded-xl transition shadow-sm cursor-pointer"
                   >
                     <span>Builder</span>
                     <ArrowRight className="w-3.5 h-3.5" />
@@ -216,7 +306,7 @@ export default function Dashboard() {
             <button
               disabled={page <= 1}
               onClick={() => setPage(page - 1)}
-              className="px-4 py-2 border border-slate-200 rounded-xl text-xs font-semibold text-slate-600 disabled:opacity-40 hover:bg-white transition"
+              className="px-4 py-2 border border-slate-200 rounded-xl text-xs font-semibold text-slate-600 disabled:opacity-40 hover:bg-white transition cursor-pointer"
             >
               Previous
             </button>
@@ -226,7 +316,7 @@ export default function Dashboard() {
             <button
               disabled={page >= pagination.total_pages}
               onClick={() => setPage(page + 1)}
-              className="px-4 py-2 border border-slate-200 rounded-xl text-xs font-semibold text-slate-600 disabled:opacity-40 hover:bg-white transition"
+              className="px-4 py-2 border border-slate-200 rounded-xl text-xs font-semibold text-slate-600 disabled:opacity-40 hover:bg-white transition cursor-pointer"
             >
               Next
             </button>
@@ -241,21 +331,21 @@ export default function Dashboard() {
             <div className="w-12 h-12 bg-red-100 text-red-600 rounded-2xl flex items-center justify-center mb-4">
               <Trash2 className="w-6 h-6" />
             </div>
-            <h3 className="text-lg font-bold text-slate-900 mb-2">Delete Trip?</h3>
+            <h3 className="text-lg font-bold text-slate-900 mb-2 font-serif">Delete Trip?</h3>
             <p className="text-slate-500 text-sm mb-6 leading-relaxed">
               Are you sure you want to delete this trip? All destination stops and scheduled itinerary activities will be permanently removed.
             </p>
             <div className="flex items-center space-x-3 justify-end">
               <button
                 onClick={() => setDeleteTripId(null)}
-                className="px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition"
+                className="px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 disabled={isDeleting}
                 onClick={handleDeleteTrip}
-                className="px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-semibold transition flex items-center space-x-2"
+                className="px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-semibold transition flex items-center space-x-2 cursor-pointer"
               >
                 {isDeleting && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
                 <span>Delete Trip</span>

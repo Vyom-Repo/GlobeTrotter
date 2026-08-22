@@ -9,7 +9,7 @@ import TripBudget from './pages/TripBudget';
 import PublicTrips from './pages/PublicTrips';
 import PublicTripDetails from './pages/PublicTripDetails';
 import SavedDestinations from './pages/SavedDestinations';
-import Screen07_UserProfile from '../../src/components/Screen07_UserProfile';
+import UserProfile from './pages/UserProfile';
 import authService from './services/authService';
 
 function ProtectedRoute({ children }) {
@@ -88,7 +88,7 @@ function App() {
           path="/profile"
           element={
             <ProtectedRoute>
-              <Screen07_UserProfile />
+              <UserProfile />
             </ProtectedRoute>
           }
         />
