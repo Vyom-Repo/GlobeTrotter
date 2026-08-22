@@ -12,6 +12,7 @@ from backend.api.expenses import router as expenses_router
 from backend.api.saved_destinations import router as saved_destinations_router
 from backend.api.trip_shares import router as trip_shares_router
 from backend.api.public import router as public_router
+from backend.api.notifications import router as notifications_router
 
 api_router = APIRouter(prefix="/api/v1")
 
@@ -27,3 +28,4 @@ api_router.include_router(expenses_router)
 api_router.include_router(saved_destinations_router)
 api_router.include_router(trip_shares_router)
 api_router.include_router(public_router)
+api_router.include_router(notifications_router)

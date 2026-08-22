@@ -61,6 +61,14 @@ class BudgetService:
         db.add(db_exp)
         db.commit()
         db.refresh(db_exp)
+
+        # Trigger budget warning evaluation if thresholds (80%/100%) are crossed
+        try:
+            from backend.services.reminder_service import ReminderService
+            ReminderService.check_budget_warnings(db, db_exp.trip_id)
+        except Exception:
+            pass
+
         return db_exp
 
     @staticmethod

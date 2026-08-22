@@ -23,3 +23,5 @@ class User(Base):
     trips = relationship("Trip", back_populates="user", cascade="all, delete-orphan")
     saved_destinations = relationship("SavedDestination", back_populates="user", cascade="all, delete-orphan")
     trip_shares = relationship("TripShare", back_populates="shared_with_user", cascade="all, delete-orphan")
+    notifications = relationship("Notification", back_populates="user", cascade="all, delete-orphan")
+    activities = relationship("UserActivity", back_populates="user", cascade="all, delete-orphan")

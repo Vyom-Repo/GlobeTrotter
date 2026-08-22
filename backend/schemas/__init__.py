@@ -10,6 +10,8 @@ from backend.schemas.itinerary import ItineraryItemBase, ItineraryItemCreate, It
 from backend.schemas.expense import ExpenseBase, ExpenseCreate, ExpenseResponse, BudgetSummary
 from backend.schemas.saved_destination import SavedDestinationCreate, SavedDestinationResponse
 from backend.schemas.trip_share import TripShareCreate, TripShareResponse
+from backend.schemas.notification import NotificationResponse, NotificationListResponse, UnreadCountResponse
+from backend.schemas.user_activity import UserActivityResponse
 
 __all__ = [
     "SuccessResponse",
@@ -47,4 +49,8 @@ __all__ = [
     "SavedDestinationResponse",
     "TripShareCreate",
     "TripShareResponse",
+    "NotificationResponse",
+    "NotificationListResponse",
+    "UnreadCountResponse",
+    "UserActivityResponse",
 ]
