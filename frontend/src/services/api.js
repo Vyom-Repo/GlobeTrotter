@@ -1,4 +1,7 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
+const RAW_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+const API_BASE_URL = RAW_BASE_URL.replace(/\/+$/, '').endsWith('/api/v1')
+  ? RAW_BASE_URL.replace(/\/+$/, '')
+  : `${RAW_BASE_URL.replace(/\/+$/, '')}/api/v1`;
 
 /**
  * Centralized API client for GlobeTrotter backend calls.
@@ -6,17 +9,16 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000
 export async function apiRequest(endpoint, options = {}) {
   let cleanEndpoint = endpoint;
   if (cleanEndpoint.startsWith('/api/v1/')) {
-    cleanEndpoint = cleanEndpoint.replace('/api/v1', '');
+    cleanEndpoint = cleanEndpoint.substring(8);
   } else if (cleanEndpoint.startsWith('api/v1/')) {
-    cleanEndpoint = cleanEndpoint.replace('api/v1', '');
+    cleanEndpoint = cleanEndpoint.substring(7);
   }
 
-  if (!cleanEndpoint.startsWith('/') && !cleanEndpoint.startsWith('http')) {
+  if (!cleanEndpoint.startsWith('/')) {
     cleanEndpoint = '/' + cleanEndpoint;
   }
 
-  const baseUrl = API_BASE_URL.replace(/\/+$/, '');
-  const url = endpoint.startsWith('http') ? endpoint : `${baseUrl}${cleanEndpoint}`;
+  const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${cleanEndpoint}`;
 
   const token = localStorage.getItem('token');
   const headers = {
