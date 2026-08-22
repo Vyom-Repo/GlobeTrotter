@@ -18,6 +18,18 @@ class ItineraryItemBase(BaseModel):
 class ItineraryItemCreate(ItineraryItemBase):
     pass
 
+class ItineraryItemUpdate(BaseModel):
+    scheduled_date: Optional[date] = None
+    start_time: Optional[time] = None
+    end_time: Optional[time] = None
+    item_order: Optional[int] = None
+    notes: Optional[str] = None
+    estimated_cost: Optional[Decimal] = None
+
+class ItineraryItemReorderItem(BaseModel):
+    item_id: UUID
+    item_order: int
+
 class ItineraryItemResponse(ItineraryItemBase):
     id: UUID
     created_at: datetime

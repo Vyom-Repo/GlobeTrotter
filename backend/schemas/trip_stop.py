@@ -15,6 +15,16 @@ class TripStopBase(BaseModel):
 class TripStopCreate(TripStopBase):
     pass
 
+class TripStopUpdate(BaseModel):
+    start_date: Optional[date] = None
+    end_date: Optional[date] = None
+    stop_order: Optional[int] = None
+    notes: Optional[str] = None
+
+class TripStopReorderItem(BaseModel):
+    stop_id: UUID
+    stop_order: int
+
 class TripStopResponse(TripStopBase):
     id: UUID
     created_at: datetime

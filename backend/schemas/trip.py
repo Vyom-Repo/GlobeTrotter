@@ -1,9 +1,10 @@
 from datetime import date, datetime
-from typing import Optional
+from typing import Optional, List
 from decimal import Decimal
 from uuid import UUID
 from pydantic import BaseModel, ConfigDict
 from backend.models.trip import TripVisibility
+from backend.schemas.trip_stop import TripStopResponse
 
 class TripBase(BaseModel):
     name: str
@@ -34,3 +35,6 @@ class TripResponse(TripBase):
     updated_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
+class TripDetailResponse(TripResponse):
+    stops: List[TripStopResponse] = []

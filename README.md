@@ -173,6 +173,34 @@ erDiagram
 
 ---
 
+## 📌 Phase 3 API Documentation
+
+### ✈️ Trip Management APIs (`/api/v1/trips`)
+Requires `Authorization: Bearer <JWT_TOKEN>`. User ownership is strictly enforced server-side.
+- `POST /api/v1/trips`: Create a new travel trip.
+- `GET /api/v1/trips`: List all trips owned by the authenticated user (Paginated).
+- `GET /api/v1/trips/{trip_id}`: Retrieve detailed trip object including destination stops.
+- `PUT /api/v1/trips/{trip_id}` / `PATCH /api/v1/trips/{trip_id}`: Update trip name, dates, description, or budget (Owner only).
+- `DELETE /api/v1/trips/{trip_id}`: Delete trip and cascading stops/itineraries (Owner only).
+
+### 🏙️ Destination Stop APIs (`/api/v1/trip-stops`)
+- `POST /api/v1/trip-stops`: Add an offline city destination stop to a trip.
+- `GET /api/v1/trips/{trip_id}/stops`: List ordered destination stops for a trip.
+- `GET /api/v1/trip-stops/{stop_id}`: Retrieve details of a specific destination stop.
+- `PUT /api/v1/trip-stops/{stop_id}` / `PATCH`: Update stop dates or notes.
+- `DELETE /api/v1/trip-stops/{stop_id}`: Remove destination stop.
+- `POST /api/v1/trips/{trip_id}/stops/reorder`: Reorder destination stops.
+
+### 📅 Itinerary Management APIs (`/api/v1/itinerary`)
+- `POST /api/v1/itinerary`: Schedule an offline activity to a trip stop day.
+- `GET /api/v1/trip-stops/{stop_id}/itinerary`: List scheduled day-wise itinerary items for a stop.
+- `GET /api/v1/itinerary/{item_id}`: Retrieve itinerary item details.
+- `PUT /api/v1/itinerary/{item_id}` / `PATCH`: Update scheduled date, time, order, or notes.
+- `DELETE /api/v1/itinerary/{item_id}`: Remove activity from itinerary.
+- `POST /api/v1/trip-stops/{stop_id}/itinerary/reorder`: Reorder daily activities.
+
+---
+
 ## 🧪 Testing & Verification
 
 Run the automated test suite and database verification scripts:
