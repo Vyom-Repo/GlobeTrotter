@@ -1,3 +1,3 @@
-"""
-API route modules for authentication, users, trips, cities, stops, activities, and budgets.
-"""
+from backend.api.router import api_router
+
+__all__ = ["api_router"]
