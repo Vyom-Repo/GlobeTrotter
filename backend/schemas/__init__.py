@@ -15,6 +15,10 @@ from backend.schemas.saved_destination import SavedDestinationCreate, SavedDesti
 from backend.schemas.trip_share import TripShareCreate, TripShareResponse
 from backend.schemas.notification import NotificationResponse, NotificationListResponse, UnreadCountResponse
 from backend.schemas.user_activity import UserActivityResponse
+from backend.schemas.search import (
+    SearchResultItem, UnifiedSearchResponse,
+    RecommendationItem, RecommendationListResponse
+)
 
 __all__ = [
     "SuccessResponse",
@@ -59,4 +63,8 @@ __all__ = [
     "NotificationListResponse",
     "UnreadCountResponse",
     "UserActivityResponse",
+    "SearchResultItem",
+    "UnifiedSearchResponse",
+    "RecommendationItem",
+    "RecommendationListResponse",
 ]

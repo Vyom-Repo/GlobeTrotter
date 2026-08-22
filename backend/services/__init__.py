@@ -5,6 +5,8 @@ from backend.services.budget_service import BudgetService
 from backend.services.sharing_service import SharingService
 from backend.services.notification_service import NotificationService
 from backend.services.reminder_service import ReminderService
+from backend.services.search_service import SearchService
+from backend.services.recommendation_service import RecommendationService
 
 __all__ = [
     "AuthService",
@@ -14,4 +16,6 @@ __all__ = [
     "SharingService",
     "NotificationService",
     "ReminderService",
+    "SearchService",
+    "RecommendationService",
 ]
