@@ -134,11 +134,13 @@ def test_trip_stops_and_itinerary_workflow(client, db_session):
     db_session.flush()
 
     city = City(country_id=country.id, name="Tokyo", region="Kanto")
-    db_session.add(city)
+    city2 = City(country_id=country.id, name="Kyoto", region="Kansai")
+    db_session.add_all([city, city2])
     db_session.flush()
 
     activity = Activity(city_id=city.id, name="Sensō-ji Temple", activity_type="cultural", estimated_cost=1000)
-    db_session.add(activity)
+    activity_kyoto = Activity(city_id=city2.id, name="Fushimi Inari Shrine", activity_type="cultural", estimated_cost=500)
+    db_session.add_all([activity, activity_kyoto])
     db_session.commit()
 
     # 1. Create Trip
@@ -150,7 +152,7 @@ def test_trip_stops_and_itinerary_workflow(client, db_session):
     }, headers=headers)
     trip_id = trip_res.json()["data"]["id"]
 
-    # 2. Add Stop
+    # 2. Add Stop (Valid range)
     stop_res = client.post("/api/v1/trip-stops", json={
         "trip_id": trip_id,
         "city_id": str(city.id),
@@ -162,7 +164,18 @@ def test_trip_stops_and_itinerary_workflow(client, db_session):
     assert stop_res.status_code == 201
     stop_id = stop_res.json()["data"]["id"]
 
-    # 3. Add Itinerary Item
+    # 2b. Add Stop Out of Trip Range -> 400
+    stop_out_of_range = client.post("/api/v1/trip-stops", json={
+        "trip_id": trip_id,
+        "city_id": str(city.id),
+        "start_date": str(today + timedelta(days=10)),
+        "end_date": str(today + timedelta(days=12)),
+        "stop_order": 2
+    }, headers=headers)
+    assert stop_out_of_range.status_code == 400
+    assert stop_out_of_range.json()["error"]["code"] == "STOP_DATES_OUT_OF_RANGE"
+
+    # 3. Add Itinerary Item (Valid)
     item_res = client.post("/api/v1/itinerary", json={
         "trip_stop_id": stop_id,
         "activity_id": str(activity.id),
@@ -174,6 +187,16 @@ def test_trip_stops_and_itinerary_workflow(client, db_session):
     }, headers=headers)
     assert item_res.status_code == 201
     item_id = item_res.json()["data"]["id"]
+
+    # 3b. Add Itinerary Item with City Mismatch -> 400
+    mismatch_res = client.post("/api/v1/itinerary", json={
+        "trip_stop_id": stop_id,
+        "activity_id": str(activity_kyoto.id),
+        "scheduled_date": str(today),
+        "item_order": 2
+    }, headers=headers)
+    assert mismatch_res.status_code == 400
+    assert mismatch_res.json()["error"]["code"] == "ACTIVITY_CITY_MISMATCH"
 
     # 4. Fetch Stop Itinerary
     itin_res = client.get(f"/api/v1/trip-stops/{stop_id}/itinerary", headers=headers)

@@ -111,6 +111,12 @@ class TripService:
         if stop_in.start_date > stop_in.end_date:
             raise BadRequestException(message="Stop start date cannot be after end date", code="INVALID_DATE_RANGE")
 
+        if stop_in.start_date < trip.start_date or stop_in.end_date > trip.end_date:
+            raise BadRequestException(
+                message=f"Stop dates ({stop_in.start_date} to {stop_in.end_date}) must fall within trip date range ({trip.start_date} to {trip.end_date})",
+                code="STOP_DATES_OUT_OF_RANGE"
+            )
+
         if stop_in.stop_order <= 0:
             raise BadRequestException(message="Stop order must be a positive integer", code="INVALID_STOP_ORDER")
 
@@ -159,6 +165,12 @@ class TripService:
         new_end = update_data.get("end_date", stop.end_date)
         if new_start > new_end:
             raise BadRequestException(message="Stop start date cannot be after end date", code="INVALID_DATE_RANGE")
+
+        if new_start < trip.start_date or new_end > trip.end_date:
+            raise BadRequestException(
+                message=f"Stop dates ({new_start} to {new_end}) must fall within trip date range ({trip.start_date} to {trip.end_date})",
+                code="STOP_DATES_OUT_OF_RANGE"
+            )
 
         if "stop_order" in update_data and update_data["stop_order"] <= 0:
             raise BadRequestException(message="Stop order must be a positive integer", code="INVALID_STOP_ORDER")

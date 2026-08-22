@@ -68,6 +68,15 @@ class ItineraryService:
         if not activity:
             raise NotFoundException(message="Activity not found in dataset", code="ACTIVITY_NOT_FOUND")
 
+        if activity.city_id != stop.city_id:
+            raise BadRequestException(message="Activity does not belong to the selected destination stop city", code="ACTIVITY_CITY_MISMATCH")
+
+        if item_in.scheduled_date < stop.start_date or item_in.scheduled_date > stop.end_date:
+            raise BadRequestException(
+                message=f"Scheduled date ({item_in.scheduled_date}) must fall within stop date range ({stop.start_date} to {stop.end_date})",
+                code="SCHEDULED_DATE_OUT_OF_RANGE"
+            )
+
         if item_in.item_order <= 0:
             raise BadRequestException(message="Item order must be a positive integer", code="INVALID_ITEM_ORDER")
 
@@ -102,6 +111,14 @@ class ItineraryService:
             raise ForbiddenException(message="You do not have permission to modify this itinerary item", code="ITINERARY_MODIFY_DENIED")
 
         update_data = item_in.model_dump(exclude_unset=True)
+
+        if "scheduled_date" in update_data:
+            new_date = update_data["scheduled_date"]
+            if new_date < stop.start_date or new_date > stop.end_date:
+                raise BadRequestException(
+                    message=f"Scheduled date ({new_date}) must fall within stop date range ({stop.start_date} to {stop.end_date})",
+                    code="SCHEDULED_DATE_OUT_OF_RANGE"
+                )
 
         if "item_order" in update_data and update_data["item_order"] <= 0:
             raise BadRequestException(message="Item order must be a positive integer", code="INVALID_ITEM_ORDER")
